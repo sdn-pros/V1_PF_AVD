@@ -1,0 +1,99 @@
+---
+
+
+fabric_name: PF_NETWORK
+
+# This is needed for virtual/containerized EOS
+bgp_update_wait_install: false
+
+# Can also be just autovpn
+
+wan_mode: cv-pathfinder
+
+bgp_as: 65001
+
+
+cv_pathfinder_regions:
+  - name: GLOBAL
+    id: 1
+    sites:
+      - name: SITE1
+        id: 101
+      - name: SITE2
+        id: 102
+
+
+# You really want to use passwords here, as lots of critical info is reflected/served from these BGP servers
+
+bgp_peer_groups:
+  wan_overlay_peers:
+    password: "htm4AZe9mIQOO1uiMuGgYQ=="
+    listen_range_prefixes:
+      - 192.168.0.0/24
+
+wan_route_servers:
+  - hostname: P10
+    vtep_ip: 192.168.0.51
+    path_groups:
+      - name: mpls
+        interfaces:
+          - name: Ethernet4
+            public_ip: 192.51.81.1/24
+          - name: Ethernet5
+            public_ip: 192.51.82.1/24
+      - name: internet
+        interfaces:
+          - name: Ethernet6
+            public_ip: 192.51.75.1/24
+  - hostname: P11
+    vtep_ip: 192.168.0.52
+    path_groups:
+      - name: mpls
+        interfaces:
+          - name: Ethernet1
+            public_ip: 172.18.2.2/24
+      - name: internet
+        interfaces:
+          - name: Ethernet2
+            public_ip: 100.64.2.2/24
+
+
+
+wan_ipsec_profiles:
+  control_plane:
+    shared_key: 0110100A480E0A0E231D1E
+  data_plane:
+    shared_key: 0110100A480E0A0E231D1E
+
+wan_path_groups:
+  - name: mpls_path
+    id: 1001
+  - name: internet_path
+    id: 1002
+
+wan_carriers:
+  - name: mpls
+    path_group: mpls_path
+    trusted: true
+  - name: internet
+    path_group: internet_path
+    trusted: true
+
+wan_virtual_topologies:
+  vrfs:
+    - name: VRF_A
+      policy: DEFAULT-AVT-POLICY
+      wan_vni: 101
+  policies:
+    - name: DEFAULT-AVT-POLICY
+      default_virtual_topology:
+        path_groups:
+          - names: [mpls, internet]
+            preference: preferred
+overlay_rt_type:
+  admin_subfield: bgp_as
+tenants:
+  - name: TENANT_A
+    vrfs:
+      - name: VRF_A
+        vrf_vni: 101

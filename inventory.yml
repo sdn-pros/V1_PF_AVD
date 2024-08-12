@@ -1,0 +1,23 @@
+---
+all:
+  children:
+    PF_NETWORK:
+      children:
+        pathfinder:
+          hosts:
+            RR1:
+            RR2:
+            RR3:
+            RR4:
+        SITE1:
+          vars:
+            type: wan_router
+          hosts:
+            P10:
+            P11:
+        SITE2:
+          hosts:
+            P20:
+            P21:
+            
+

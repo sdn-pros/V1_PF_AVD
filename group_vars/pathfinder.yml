@@ -1,0 +1,18 @@
+---
+type: wan_rr
+
+wan_rr:
+  defaults:
+    data_plane_cpu_allocation_max: 1
+    cv_pathfinder_region: GLOBAL
+    filter:
+      always_include_vrfs_in_tenants: [VRF_A]
+  nodes:
+    - name: RR1
+      id: 1
+    - name: RR2
+      id: 2
+    - name: RR3
+      id: 3
+    - name: RR4
+      id: 4
