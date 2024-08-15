@@ -1,5 +1,15 @@
 ---
 all:
+  hosts: 
+    cvaas: 
+      ansible_host: 192.168.0.5
+      ansible_user: arista
+      ansible_password: aristajqzo
+      ansible_connection: httpapi
+      ansible_httpapi_use_ssl: True
+      ansible_httpapi_validate_certs: False
+      ansible_network_os: eos
+      ansible_httpapi_port: 443
   children:
     PF_NETWORK:
       children:
@@ -7,17 +17,25 @@ all:
           hosts:
             RR1:
             RR2:
-            RR3:
-            RR4:
-        SITE1:
-          vars:
-            type: wan_router
-          hosts:
-            P10:
-            P11:
-        SITE2:
-          hosts:
-            P20:
-            P21:
-            
+            # RR3:
+            # RR4:
+        REGIONS:
+          children:
+            REGION1:
+              vars:
+                type: wan_router
+              children:
+                SITE11:
+                  vars:
+                    type: wan_router
+                  hosts:
+                    Edge10:
+                      vars: 
+                        type: wan_router
+                SITE12:
+                  hosts: 
+                    Edge12:
+                SITE13:
+                  hosts:
+                    Edge13:
 

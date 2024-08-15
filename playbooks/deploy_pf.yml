@@ -1,0 +1,13 @@
+---
+- name: Apply configlets
+  hosts: cvaas
+
+  vars_files:
+    - ../vars/PF_Model.yml
+  tasks:
+    - name: Upload configlets
+      arista.cvp.cv_configlet_v3:
+        configlets: "{{ pf_configlets }}"
+    - name: Apply configlets
+      arista.cvp.cv_device_v3:
+        devices: "{{ pf_devices }}"

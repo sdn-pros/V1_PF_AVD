@@ -1,0 +1,30 @@
+pf_configlets:
+  
+  PF_Edge10: "{{ lookup('file', '../intended/configs/Edge10.cfg') }}"
+  PF_Edge12: "{{ lookup('file', '../intended/configs/Edge12.cfg') }}"
+  PF_Edge13: "{{ lookup('file', '../intended/configs/Edge13.cfg') }}"
+  PF_RR1: "{{ lookup('file', '../intended/configs/RR1.cfg') }}"
+  PF_RR2: "{{ lookup('file', '../intended/configs/RR2.cfg') }}"
+ 
+
+pf_devices:
+  - fqdn: Edge10
+    parentContainerName: Region1
+    configlets:
+      - 'PF_Edge10'
+  - fqdn: Edge12
+    parentContainerName: Region1
+    configlets:
+      - 'PF_Edge12'
+  - fqdn: Edge13
+    parentContainerName: Region1
+    configlets:
+      - 'PF_Edge13'
+  - fqdn: RR1
+    parentContainerName: Region2
+    configlets:
+      - 'PF_RR1'
+  - fqdn: RR2
+    parentContainerName: Region2
+    configlets:
+      - 'PF_RR2'

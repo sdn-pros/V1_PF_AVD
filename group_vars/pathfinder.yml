@@ -4,15 +4,51 @@ type: wan_rr
 wan_rr:
   defaults:
     data_plane_cpu_allocation_max: 1
-    cv_pathfinder_region: GLOBAL
+    loopback_ipv4_pool: 10.99.99.0/24
+    vtep_loopback_ipv4_pool: 10.99.98.0/24
+    cv_pathfinder_region: REGION1
     filter:
-      always_include_vrfs_in_tenants: [VRF_A]
+      always_include_vrfs_in_tenants: [TENANT_A]
   nodes:
     - name: RR1
-      id: 1
+      id: 11
+      cv_pathfinder_region: REGION1
+      l3_interfaces:
+        - name: Ethernet2
+          ip_address: 192.15.71.2/24
+          wan_carrier: mpls
+        - name: Ethernet3
+          ip_address: 192.16.71.2/24
+          wan_carrier: internet
     - name: RR2
-      id: 2
-    - name: RR3
-      id: 3
-    - name: RR4
-      id: 4
+      id: 12
+      cv_pathfinder_region: REGION1
+      l3_interfaces:
+        - name: Ethernet2
+          ip_address: 192.15.72.2/24
+          wan_carrier: mpls
+        - name: Ethernet3
+          ip_address: 192.16.72.2/24
+          wan_carrier: internet
+    # - name: RR3
+    #   id: 13
+    #   cv_pathfinder_region: REGION2
+    #   cv_pathfinder_site: SITE2
+    #   l3_interfaces:
+    #     - name: Ethernet2
+    #       ip_address: 192.25.76.2/24
+    #       wan_carrier: mpls
+    #     - name: Ethernet3
+    #       ip_address: 192.26.76.2/24
+    #       wan_carrier: internet
+    # - name: RR4
+    #   id: 14
+    #   cv_pathfinder_region: REGION2
+    #   cv_pathfinder_site: SITE2
+    #   l3_interfaces:
+    #     - name: Ethernet2
+    #       ip_address: 192.25.77.2/24
+    #       wan_carrier: mpls
+    #     - name: Ethernet3
+    #       ip_address: 192.26.77.2/24
+    #       wan_carrier: internet

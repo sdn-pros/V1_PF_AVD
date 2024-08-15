@@ -1,0 +1,368 @@
+hostname: Edge10
+is_deployed: true
+router_bgp:
+  as: '65000'
+  router_id: 10.99.101.1
+  bgp:
+    default:
+      ipv4_unicast: false
+  maximum_paths:
+    paths: 16
+  redistribute_routes:
+  - source_protocol: connected
+    route_map: RM-CONN-2-BGP
+  peer_groups:
+  - name: WAN-OVERLAY-PEERS
+    type: wan
+    update_source: Dps1
+    bfd: true
+    password: htm4AZe9mIQOO1uiMuGgYQ==
+    send_community: all
+    maximum_routes: 0
+    remote_as: '65000'
+    ttl_maximum_hops: 1
+    bfd_timers:
+      interval: 1000
+      min_rx: 1000
+      multiplier: 10
+  address_family_evpn:
+    peer_groups:
+    - name: WAN-OVERLAY-PEERS
+      activate: true
+      route_map_in: RM-EVPN-SOO-IN
+      route_map_out: RM-EVPN-SOO-OUT
+  address_family_ipv4:
+    peer_groups:
+    - name: WAN-OVERLAY-PEERS
+      activate: false
+  address_family_ipv4_sr_te:
+    peer_groups:
+    - name: WAN-OVERLAY-PEERS
+      activate: true
+  address_family_link_state:
+    peer_groups:
+    - name: WAN-OVERLAY-PEERS
+      activate: true
+    path_selection:
+      roles:
+        producer: true
+  address_family_path_selection:
+    peer_groups:
+    - name: WAN-OVERLAY-PEERS
+      activate: true
+    bgp:
+      additional_paths:
+        receive: true
+        send:
+          any: true
+  vrfs:
+  - name: VRF_A
+    router_id: 10.99.101.1
+    rd: 10.99.101.1:101
+    route_targets:
+      import:
+      - address_family: evpn
+        route_targets:
+        - 65000:101
+      export:
+      - address_family: evpn
+        route_targets:
+        - 65000:101
+    redistribute_routes:
+    - source_protocol: connected
+  - name: default
+    rd: 10.99.101.1:1
+    route_targets:
+      import:
+      - address_family: evpn
+        route_targets:
+        - '65000:1'
+      export:
+      - address_family: evpn
+        route_targets:
+        - '65000:1'
+        - route-map RM-EVPN-EXPORT-VRF-DEFAULT
+service_routing_protocols_model: multi-agent
+ip_routing: true
+transceiver_qsfp_default_mode_4x10: false
+spanning_tree:
+  mode: none
+vrfs:
+- name: MGMT
+  ip_routing: false
+- name: VRF_A
+  tenant: TENANT_A
+  ip_routing: true
+management_api_http:
+  enable_vrfs:
+  - name: MGMT
+  enable_https: true
+ethernet_interfaces:
+- name: Ethernet4
+  peer_type: l3_interface
+  ip_address: 192.10.15.1/24
+  shutdown: false
+  type: routed
+  description: mpls
+- name: Ethernet5
+  peer_type: l3_interface
+  ip_address: 192.10.16.1/24
+  shutdown: false
+  type: routed
+  description: internet
+loopback_interfaces:
+- name: Loopback0
+  description: Router_ID
+  shutdown: false
+  ip_address: 10.99.101.1/32
+prefix_lists:
+- name: PL-LOOPBACKS-EVPN-OVERLAY
+  sequence_numbers:
+  - sequence: 10
+    action: permit 10.99.101.0/24 eq 32
+route_maps:
+- name: RM-CONN-2-BGP
+  sequence_numbers:
+  - sequence: 10
+    type: permit
+    match:
+    - ip address prefix-list PL-LOOPBACKS-EVPN-OVERLAY
+    set:
+    - extcommunity soo 10.99.101.1:101 additive
+- name: RM-EVPN-SOO-IN
+  sequence_numbers:
+  - sequence: 10
+    type: deny
+    match:
+    - extcommunity ECL-EVPN-SOO
+  - sequence: 20
+    type: permit
+- name: RM-EVPN-SOO-OUT
+  sequence_numbers:
+  - sequence: 10
+    type: permit
+    set:
+    - extcommunity soo 10.99.101.1:101 additive
+- name: RM-EVPN-EXPORT-VRF-DEFAULT
+  sequence_numbers:
+  - sequence: 10
+    type: permit
+    match:
+    - extcommunity ECL-EVPN-SOO
+agents:
+- name: KernelFib
+  environment_variables:
+  - name: KERNELFIB_PROGRAM_ALL_ECMP
+    value: '1'
+ip_extcommunity_lists:
+- name: ECL-EVPN-SOO
+  entries:
+  - type: permit
+    extcommunities: soo 10.99.101.1:101
+ip_security:
+  ike_policies:
+  - name: CP-IKE-POLICY
+    local_id: 10.99.102.1
+  sa_policies:
+  - name: DP-SA-POLICY
+    esp:
+      encryption: aes256gcm128
+    pfs_dh_group: 14
+  - name: CP-SA-POLICY
+    esp:
+      encryption: aes256gcm128
+    pfs_dh_group: 14
+  profiles:
+  - name: DP-PROFILE
+    sa_policy: DP-SA-POLICY
+    connection: start
+    shared_key: 0110100A480E0A0E231D1E
+    dpd:
+      interval: 10
+      time: 50
+      action: clear
+    mode: transport
+  - name: CP-PROFILE
+    ike_policy: CP-IKE-POLICY
+    sa_policy: CP-SA-POLICY
+    connection: start
+    shared_key: 0110100A480E0A0E231D1E
+    dpd:
+      interval: 10
+      time: 50
+      action: clear
+    mode: transport
+  key_controller:
+    profile: DP-PROFILE
+management_security:
+  ssl_profiles:
+  - name: STUN-DTLS
+    certificate:
+      file: STUN-DTLS.crt
+      key: STUN-DTLS.key
+    trust_certificate:
+      certificates:
+      - aristaDeviceCertProvisionerDefaultRootCA.crt
+    tls_versions: '1.2'
+router_adaptive_virtual_topology:
+  topology_role: edge
+  region:
+    name: REGION1
+    id: 1
+  zone:
+    name: REGION1-ZONE
+    id: 1
+  site:
+    name: SITE11
+    id: 101
+  profiles:
+  - name: DEFAULT-AVT-POLICY-DEFAULT
+    load_balance_policy: LB-DEFAULT-AVT-POLICY-DEFAULT
+  - name: DEFAULT-POLICY-CONTROL-PLANE
+    load_balance_policy: LB-DEFAULT-POLICY-CONTROL-PLANE
+  - name: DEFAULT-POLICY-DEFAULT
+    load_balance_policy: LB-DEFAULT-POLICY-DEFAULT
+  vrfs:
+  - name: VRF_A
+    policy: DEFAULT-AVT-POLICY
+    profiles:
+    - name: DEFAULT-AVT-POLICY-DEFAULT
+      id: 1
+  - name: default
+    policy: DEFAULT-POLICY-WITH-CP
+    profiles:
+    - name: DEFAULT-POLICY-CONTROL-PLANE
+      id: 254
+    - name: DEFAULT-POLICY-DEFAULT
+      id: 1
+  policies:
+  - name: DEFAULT-AVT-POLICY
+    matches:
+    - application_profile: default
+      avt_profile: DEFAULT-AVT-POLICY-DEFAULT
+  - name: DEFAULT-POLICY-WITH-CP
+    matches:
+    - application_profile: APP-PROFILE-CONTROL-PLANE
+      avt_profile: DEFAULT-POLICY-CONTROL-PLANE
+    - application_profile: default
+      avt_profile: DEFAULT-POLICY-DEFAULT
+router_bfd:
+  multihop:
+    interval: 300
+    min_rx: 300
+    multiplier: 3
+router_path_selection:
+  tcp_mss_ceiling:
+    ipv4_segment_size: auto
+  path_groups:
+  - name: mpls_path
+    id: 1001
+    local_interfaces:
+    - name: Ethernet4
+    dynamic_peers:
+      enabled: true
+    ipsec_profile: CP-PROFILE
+  - name: internet_path
+    id: 1002
+    local_interfaces:
+    - name: Ethernet5
+    dynamic_peers:
+      enabled: true
+    ipsec_profile: CP-PROFILE
+  load_balance_policies:
+  - name: LB-DEFAULT-AVT-POLICY-DEFAULT
+    path_groups:
+    - name: mpls_path
+    - name: internet_path
+  - name: LB-DEFAULT-POLICY-CONTROL-PLANE
+    path_groups:
+    - name: internet_path
+    - name: mpls_path
+  - name: LB-DEFAULT-POLICY-DEFAULT
+    path_groups:
+    - name: internet_path
+    - name: mpls_path
+router_traffic_engineering:
+  enabled: true
+application_traffic_recognition:
+  application_profiles:
+  - name: APP-PROFILE-CONTROL-PLANE
+    applications:
+    - name: APP-CONTROL-PLANE
+  applications:
+    ipv4_applications:
+    - name: APP-CONTROL-PLANE
+      dest_prefix_set_name: PFX-PATHFINDERS
+  field_sets:
+    ipv4_prefixes:
+    - name: PFX-PATHFINDERS
+dps_interfaces:
+- name: Dps1
+  description: DPS Interface
+  mtu: 9214
+  ip_address: 10.99.102.1/32
+  flow_tracker:
+    hardware: FLOW-TRACKER
+vxlan_interface:
+  Vxlan1:
+    description: Edge10_VTEP
+    vxlan:
+      udp_port: 4789
+      source_interface: Dps1
+      vrfs:
+      - name: VRF_A
+        vni: 101
+      - name: default
+        vni: 1
+flow_tracking:
+  hardware:
+    trackers:
+    - name: FLOW-TRACKER
+      record_export:
+        on_inactive_timeout: 70000
+        on_interval: 300000
+      exporters:
+      - name: CV-TELEMETRY
+        collector:
+          host: 127.0.0.1
+        local_interface: Loopback0
+        template_interval: 3600000
+    shutdown: false
+metadata:
+  cv_tags:
+    device_tags:
+    - name: Role
+      value: edge
+    - name: Region
+      value: REGION1
+    - name: Zone
+      value: REGION1-ZONE
+    - name: Site
+      value: SITE11
+    interface_tags:
+    - interface: Ethernet4
+      tags:
+      - name: Type
+        value: wan
+      - name: Carrier
+        value: mpls
+    - interface: Ethernet5
+      tags:
+      - name: Type
+        value: wan
+      - name: Carrier
+        value: internet
+  cv_pathfinder:
+    role: edge
+    ssl_profile: STUN-DTLS
+    vtep_ip: 10.99.102.1
+    region: REGION1
+    zone: REGION1-ZONE
+    site: SITE11
+    interfaces:
+    - name: Ethernet4
+      carrier: mpls
+      pathgroup: mpls_path
+    - name: Ethernet5
+      carrier: internet
+      pathgroup: internet_path
