@@ -2,7 +2,7 @@ hostname: Edge13
 is_deployed: true
 router_bgp:
   as: '65000'
-  router_id: 10.99.201.3
+  router_id: 10.99.101.3
   bgp:
     default:
       ipv4_unicast: false
@@ -16,7 +16,6 @@ router_bgp:
     type: wan
     update_source: Dps1
     bfd: true
-    password: htm4AZe9mIQOO1uiMuGgYQ==
     send_community: all
     maximum_routes: 0
     remote_as: '65000'
@@ -56,9 +55,8 @@ router_bgp:
         send:
           any: true
   vrfs:
-  - name: VRF_A
-    router_id: 10.99.201.3
-    rd: 10.99.201.3:101
+  - name: default
+    rd: 10.99.101.3:101
     route_targets:
       import:
       - address_family: evpn
@@ -68,20 +66,21 @@ router_bgp:
       - address_family: evpn
         route_targets:
         - 65000:101
+        - route-map RM-EVPN-EXPORT-VRF-DEFAULT
+  - name: VRF_A
+    router_id: 10.99.101.3
+    rd: 10.99.101.3:102
+    route_targets:
+      import:
+      - address_family: evpn
+        route_targets:
+        - 65000:102
+      export:
+      - address_family: evpn
+        route_targets:
+        - 65000:102
     redistribute_routes:
     - source_protocol: connected
-  - name: default
-    rd: 10.99.201.3:1
-    route_targets:
-      import:
-      - address_family: evpn
-        route_targets:
-        - '65000:1'
-      export:
-      - address_family: evpn
-        route_targets:
-        - '65000:1'
-        - route-map RM-EVPN-EXPORT-VRF-DEFAULT
 service_routing_protocols_model: multi-agent
 ip_routing: true
 transceiver_qsfp_default_mode_4x10: false
@@ -114,12 +113,12 @@ loopback_interfaces:
 - name: Loopback0
   description: Router_ID
   shutdown: false
-  ip_address: 10.99.201.3/32
+  ip_address: 10.99.101.3/32
 prefix_lists:
 - name: PL-LOOPBACKS-EVPN-OVERLAY
   sequence_numbers:
   - sequence: 10
-    action: permit 10.99.201.0/24 eq 32
+    action: permit 10.99.101.0/24 eq 32
 route_maps:
 - name: RM-CONN-2-BGP
   sequence_numbers:
@@ -128,7 +127,7 @@ route_maps:
     match:
     - ip address prefix-list PL-LOOPBACKS-EVPN-OVERLAY
     set:
-    - extcommunity soo 10.99.201.3:103 additive
+    - extcommunity soo 10.99.101.3:103 additive
 - name: RM-EVPN-SOO-IN
   sequence_numbers:
   - sequence: 10
@@ -142,7 +141,7 @@ route_maps:
   - sequence: 10
     type: permit
     set:
-    - extcommunity soo 10.99.201.3:103 additive
+    - extcommunity soo 10.99.101.3:103 additive
 - name: RM-EVPN-EXPORT-VRF-DEFAULT
   sequence_numbers:
   - sequence: 10
@@ -158,11 +157,11 @@ ip_extcommunity_lists:
 - name: ECL-EVPN-SOO
   entries:
   - type: permit
-    extcommunities: soo 10.99.201.3:103
+    extcommunities: soo 10.99.101.3:103
 ip_security:
   ike_policies:
   - name: CP-IKE-POLICY
-    local_id: 10.99.202.3
+    local_id: 10.99.102.3
   sa_policies:
   - name: DP-SA-POLICY
     esp:
@@ -205,7 +204,7 @@ management_security:
       - aristaDeviceCertProvisionerDefaultRootCA.crt
     tls_versions: '1.2'
 router_adaptive_virtual_topology:
-  topology_role: edge
+  topology_role: transit zone
   region:
     name: REGION1
     id: 1
@@ -300,7 +299,7 @@ dps_interfaces:
 - name: Dps1
   description: DPS Interface
   mtu: 9214
-  ip_address: 10.99.202.3/32
+  ip_address: 10.99.102.3/32
   flow_tracker:
     hardware: FLOW-TRACKER
 vxlan_interface:
@@ -310,10 +309,10 @@ vxlan_interface:
       udp_port: 4789
       source_interface: Dps1
       vrfs:
-      - name: VRF_A
-        vni: 101
       - name: default
         vni: 1
+      - name: VRF_A
+        vni: 101
 flow_tracking:
   hardware:
     trackers:
@@ -332,7 +331,7 @@ metadata:
   cv_tags:
     device_tags:
     - name: Role
-      value: edge
+      value: transit zone
     - name: Region
       value: REGION1
     - name: Zone
@@ -353,9 +352,9 @@ metadata:
       - name: Carrier
         value: internet
   cv_pathfinder:
-    role: edge
+    role: transit zone
     ssl_profile: STUN-DTLS
-    vtep_ip: 10.99.202.3
+    vtep_ip: 10.99.102.3
     region: REGION1
     zone: REGION1-ZONE
     site: SITE13

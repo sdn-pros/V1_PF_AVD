@@ -16,7 +16,6 @@ router_bgp:
     type: wan
     update_source: Dps1
     bfd: true
-    password: htm4AZe9mIQOO1uiMuGgYQ==
     send_community: all
     maximum_routes: 0
     remote_as: '65000'
@@ -56,8 +55,7 @@ router_bgp:
         send:
           any: true
   vrfs:
-  - name: VRF_A
-    router_id: 10.99.101.2
+  - name: default
     rd: 10.99.101.2:101
     route_targets:
       import:
@@ -68,20 +66,21 @@ router_bgp:
       - address_family: evpn
         route_targets:
         - 65000:101
-    redistribute_routes:
-    - source_protocol: connected
-  - name: default
-    rd: 10.99.101.2:1
+        - route-map RM-EVPN-EXPORT-VRF-DEFAULT
+  - name: VRF_A
+    router_id: 10.99.101.2
+    rd: 10.99.101.2:102
     route_targets:
       import:
       - address_family: evpn
         route_targets:
-        - '65000:1'
+        - 65000:102
       export:
       - address_family: evpn
         route_targets:
-        - '65000:1'
-        - route-map RM-EVPN-EXPORT-VRF-DEFAULT
+        - 65000:102
+    redistribute_routes:
+    - source_protocol: connected
 service_routing_protocols_model: multi-agent
 ip_routing: true
 transceiver_qsfp_default_mode_4x10: false
@@ -205,7 +204,7 @@ management_security:
       - aristaDeviceCertProvisionerDefaultRootCA.crt
     tls_versions: '1.2'
 router_adaptive_virtual_topology:
-  topology_role: edge
+  topology_role: transit zone
   region:
     name: REGION1
     id: 1
@@ -310,10 +309,10 @@ vxlan_interface:
       udp_port: 4789
       source_interface: Dps1
       vrfs:
-      - name: VRF_A
-        vni: 101
       - name: default
         vni: 1
+      - name: VRF_A
+        vni: 101
 flow_tracking:
   hardware:
     trackers:
@@ -332,7 +331,7 @@ metadata:
   cv_tags:
     device_tags:
     - name: Role
-      value: edge
+      value: transit zone
     - name: Region
       value: REGION1
     - name: Zone
@@ -353,7 +352,7 @@ metadata:
       - name: Carrier
         value: internet
   cv_pathfinder:
-    role: edge
+    role: transit zone
     ssl_profile: STUN-DTLS
     vtep_ip: 10.99.102.2
     region: REGION1

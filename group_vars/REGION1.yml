@@ -2,13 +2,14 @@
 type: wan_router
 wan_router:
   defaults:
+    cv_pathfinder_transit_mode: zone
+    loopback_ipv4_pool: 10.99.101.0/24
+    vtep_loopback_ipv4_pool: 10.99.102.0/24
     filter:
       always_include_vrfs_in_tenants: [TENANT_A]
   nodes:
     - name: Edge10
       id: 1
-      loopback_ipv4_pool: 10.99.101.0/24
-      vtep_loopback_ipv4_pool: 10.99.102.0/24
       cv_pathfinder_region: REGION1
       cv_pathfinder_site: SITE11
       l3_interfaces:
@@ -20,8 +21,6 @@ wan_router:
           wan_carrier: internet
     - name: Edge12
       id: 2
-      loopback_ipv4_pool: 10.99.101.0/24
-      vtep_loopback_ipv4_pool: 10.99.102.0/24
       cv_pathfinder_region: REGION1
       cv_pathfinder_site: SITE12
       l3_interfaces:
@@ -33,8 +32,6 @@ wan_router:
           wan_carrier: internet
     - name: Edge13
       id: 3
-      loopback_ipv4_pool: 10.99.201.0/24
-      vtep_loopback_ipv4_pool: 10.99.202.0/24
       cv_pathfinder_region: REGION1
       cv_pathfinder_site: SITE13
       l3_interfaces:
@@ -43,4 +40,15 @@ wan_router:
           wan_carrier: mpls
         - name: Ethernet3
           ip_address: 192.13.16.1/24
+          wan_carrier: internet
+    - name: Edge14
+      id: 4
+      cv_pathfinder_region: REGION1
+      cv_pathfinder_site: SITE14
+      l3_interfaces:
+        - name: Ethernet2
+          ip_address: 192.14.15.1/24
+          wan_carrier: mpls
+        - name: Ethernet3
+          ip_address: 192.14.16.1/24
           wan_carrier: internet

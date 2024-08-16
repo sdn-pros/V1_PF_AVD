@@ -36,7 +36,7 @@ cv_pathfinder_regions:
 
 bgp_peer_groups:
   wan_overlay_peers:
-    password: "htm4AZe9mIQOO1uiMuGgYQ=="
+    # password: "htm4AZe9mIQOO1uiMuGgYQ=="
     listen_range_prefixes:
       - 10.99.101.0/24
       - 10.99.102.0/24
@@ -90,5 +90,7 @@ overlay_rt_type:
 tenants:
   - name: TENANT_A
     vrfs:
-      - name: VRF_A
+      - name: default
         vrf_vni: 101
+      - name: VRF_A
+        vrf_vni: 102

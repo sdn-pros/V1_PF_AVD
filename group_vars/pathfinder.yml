@@ -12,7 +12,6 @@ wan_rr:
   nodes:
     - name: RR1
       id: 11
-      cv_pathfinder_region: REGION1
       l3_interfaces:
         - name: Ethernet2
           ip_address: 192.15.71.2/24
@@ -22,7 +21,6 @@ wan_rr:
           wan_carrier: internet
     - name: RR2
       id: 12
-      cv_pathfinder_region: REGION1
       l3_interfaces:
         - name: Ethernet2
           ip_address: 192.15.72.2/24

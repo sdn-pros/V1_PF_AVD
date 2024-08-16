@@ -388,7 +388,7 @@ ip routing vrf VRF_A
 
 #### Router Adaptive Virtual Topology Summary
 
-Topology role: edge
+Topology role: transit zone
 
 | Hierarchy | Name | ID |
 | --------- | ---- | -- |
@@ -447,7 +447,7 @@ Topology role: edge
 ```eos
 !
 router adaptive-virtual-topology
-   topology role edge
+   topology role transit zone
    region REGION1 id 1
    zone REGION1-ZONE id 1
    site SITE11 id 101
@@ -567,8 +567,8 @@ ASN Notation: asplain
 
 | VRF | Route-Distinguisher | Redistribute |
 | --- | ------------------- | ------------ |
-| default | 10.99.101.1:1 | - |
-| VRF_A | 10.99.101.1:101 | connected |
+| default | 10.99.101.1:101 | - |
+| VRF_A | 10.99.101.1:102 | connected |
 
 #### Router BGP Device Configuration
 
@@ -584,7 +584,6 @@ router bgp 65000
    neighbor WAN-OVERLAY-PEERS bfd
    neighbor WAN-OVERLAY-PEERS bfd interval 1000 min-rx 1000 multiplier 10
    neighbor WAN-OVERLAY-PEERS ttl maximum-hops 1
-   neighbor WAN-OVERLAY-PEERS password 7 <removed>
    neighbor WAN-OVERLAY-PEERS send-community
    neighbor WAN-OVERLAY-PEERS maximum-routes 0
    redistribute connected route-map RM-CONN-2-BGP
@@ -610,15 +609,15 @@ router bgp 65000
       neighbor WAN-OVERLAY-PEERS activate
    !
    vrf default
-      rd 10.99.101.1:1
-      route-target import evpn 65000:1
-      route-target export evpn 65000:1
-      route-target export evpn route-map RM-EVPN-EXPORT-VRF-DEFAULT
-   !
-   vrf VRF_A
       rd 10.99.101.1:101
       route-target import evpn 65000:101
       route-target export evpn 65000:101
+      route-target export evpn route-map RM-EVPN-EXPORT-VRF-DEFAULT
+   !
+   vrf VRF_A
+      rd 10.99.101.1:102
+      route-target import evpn 65000:102
+      route-target export evpn 65000:102
       router-id 10.99.101.1
       redistribute connected
 ```

@@ -26,12 +26,8 @@ all:
                 type: wan_router
               children:
                 SITE11:
-                  vars:
-                    type: wan_router
                   hosts:
                     Edge10:
-                      vars: 
-                        type: wan_router
                 SITE12:
                   hosts: 
                     Edge12:
