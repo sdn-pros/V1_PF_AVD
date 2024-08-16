@@ -34,4 +34,6 @@ all:
                 SITE13:
                   hosts:
                     Edge13:
-
+                SITE14:
+                  hosts:
+                    Edge14:
