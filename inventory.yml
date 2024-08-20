@@ -4,7 +4,7 @@ all:
     cvaas: 
       ansible_host: www.arista.io
       ansible_user: cvaas
-      ansible_connection: httpapi
+      ansible_password: 
       ansible_httpapi_use_ssl: True
       ansible_httpapi_validate_certs: False
       ansible_network_os: eos
