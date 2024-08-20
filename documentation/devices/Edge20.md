@@ -1,4 +1,4 @@
-# Edge10
+# Edge20
 
 ## Table of Contents
 
@@ -144,7 +144,7 @@ spanning-tree mode none
 
 | Policy name | IKE lifetime | Encryption | DH group | Local ID |
 | ----------- | ------------ | ---------- | -------- | -------- |
-| CP-IKE-POLICY | - | - | - | 10.99.102.11 |
+| CP-IKE-POLICY | - | - | - | 10.99.202.21 |
 
 ### Security Association policies
 
@@ -173,7 +173,7 @@ spanning-tree mode none
 ip security
    !
    ike policy CP-IKE-POLICY
-      local-id 10.99.102.11
+      local-id 10.99.202.21
    !
    sa policy DP-SA-POLICY
       esp encryption aes256gcm128
@@ -210,7 +210,7 @@ ip security
 
 | Interface | IP address | Shutdown | MTU | Flow tracker(s) | TCP MSS Ceiling |
 | --------- | ---------- | -------- | --- | --------------- | --------------- |
-| Dps1 | 10.99.102.11/32 | - | 9214 | Hardware: FLOW-TRACKER |  |
+| Dps1 | 10.99.202.21/32 | - | 9214 | Hardware: FLOW-TRACKER |  |
 
 #### DPS Interfaces Device Configuration
 
@@ -220,7 +220,7 @@ interface Dps1
    description DPS Interface
    mtu 9214
    flow tracker hardware FLOW-TRACKER
-   ip address 10.99.102.11/32
+   ip address 10.99.202.21/32
 ```
 
 ### Ethernet Interfaces
@@ -238,8 +238,8 @@ interface Dps1
 
 | Interface | Description | Type | Channel Group | IP Address | VRF |  MTU | Shutdown | ACL In | ACL Out |
 | --------- | ----------- | -----| ------------- | ---------- | ----| ---- | -------- | ------ | ------- |
-| Ethernet4 | mpls | routed | - | 192.10.15.1/24 | default | - | False | - | - |
-| Ethernet5 | internet | routed | - | 192.10.16.1/24 | default | - | False | - | - |
+| Ethernet4 | mpls | routed | - | 192.20.25.1/24 | default | - | False | - | - |
+| Ethernet5 | internet | routed | - | 192.20.26.1/24 | default | - | False | - | - |
 
 #### Ethernet Interfaces Device Configuration
 
@@ -249,13 +249,13 @@ interface Ethernet4
    description mpls
    no shutdown
    no switchport
-   ip address 192.10.15.1/24
+   ip address 192.20.25.1/24
 !
 interface Ethernet5
    description internet
    no shutdown
    no switchport
-   ip address 192.10.16.1/24
+   ip address 192.20.26.1/24
 ```
 
 ### Loopback Interfaces
@@ -266,7 +266,7 @@ interface Ethernet5
 
 | Interface | Description | VRF | IP Address |
 | --------- | ----------- | --- | ---------- |
-| Loopback0 | Router_ID | default | 10.99.101.11/32 |
+| Loopback0 | Router_ID | default | 10.99.201.21/32 |
 
 ##### IPv6
 
@@ -281,7 +281,7 @@ interface Ethernet5
 interface Loopback0
    description Router_ID
    no shutdown
-   ip address 10.99.101.11/32
+   ip address 10.99.201.21/32
 ```
 
 ### VXLAN Interface
@@ -305,7 +305,7 @@ interface Loopback0
 ```eos
 !
 interface Vxlan1
-   description Edge10_VTEP
+   description Edge20_VTEP
    vxlan source-interface Dps1
    vxlan udp-port 4789
    vxlan vrf default vni 1
@@ -360,9 +360,9 @@ Topology role: transit region
 
 | Hierarchy | Name | ID |
 | --------- | ---- | -- |
-| Region | REGION1 | 1 |
-| Zone | REGION1-ZONE | 1 |
-| Site | SITE11 | 101 |
+| Region | REGION2 | 2 |
+| Zone | REGION2-ZONE | 1 |
+| Site | SITE21 | 201 |
 
 #### AVT Profiles
 
@@ -416,9 +416,9 @@ Topology role: transit region
 !
 router adaptive-virtual-topology
    topology role transit region
-   region REGION1 id 1
-   zone REGION1-ZONE id 1
-   site SITE11 id 101
+   region REGION2 id 2
+   zone REGION2-ZONE id 1
+   site SITE21 id 201
    !
    policy DEFAULT-AVT-POLICY
       !
@@ -471,7 +471,7 @@ ASN Notation: asplain
 
 | BGP AS | Router ID |
 | ------ | --------- |
-| 65000 | 10.99.101.11 |
+| 65000 | 10.99.201.21 |
 
 | BGP Tuning |
 | ---------- |
@@ -544,15 +544,15 @@ ASN Notation: asplain
 
 | VRF | Route-Distinguisher | Redistribute |
 | --- | ------------------- | ------------ |
-| default | 10.99.101.11:101 | - |
-| VRF_A | 10.99.101.11:102 | connected |
+| default | 10.99.201.21:101 | - |
+| VRF_A | 10.99.201.21:102 | connected |
 
 #### Router BGP Device Configuration
 
 ```eos
 !
 router bgp 65000
-   router-id 10.99.101.11
+   router-id 10.99.201.21
    maximum-paths 16
    no bgp default ipv4-unicast
    neighbor WAN-OVERLAY-PEERS peer group
@@ -594,16 +594,16 @@ router bgp 65000
       neighbor WAN-OVERLAY-PEERS activate
    !
    vrf default
-      rd 10.99.101.11:101
+      rd 10.99.201.21:101
       route-target import evpn 65000:101
       route-target export evpn 65000:101
       route-target export evpn route-map RM-EVPN-EXPORT-VRF-DEFAULT
    !
    vrf VRF_A
-      rd 10.99.101.11:102
+      rd 10.99.201.21:102
       route-target import evpn 65000:102
       route-target export evpn 65000:102
-      router-id 10.99.101.11
+      router-id 10.99.201.21
       redistribute connected
 ```
 
@@ -635,14 +635,14 @@ router bfd
 
 | Sequence | Action |
 | -------- | ------ |
-| 10 | permit 10.99.101.0/24 eq 32 |
+| 10 | permit 10.99.201.0/24 eq 32 |
 
 #### Prefix-lists Device Configuration
 
 ```eos
 !
 ip prefix-list PL-LOOPBACKS-EVPN-OVERLAY
-   seq 10 permit 10.99.101.0/24 eq 32
+   seq 10 permit 10.99.201.0/24 eq 32
 ```
 
 ### Route-maps
@@ -653,7 +653,7 @@ ip prefix-list PL-LOOPBACKS-EVPN-OVERLAY
 
 | Sequence | Type | Match | Set | Sub-Route-Map | Continue |
 | -------- | ---- | ----- | --- | ------------- | -------- |
-| 10 | permit | ip address prefix-list PL-LOOPBACKS-EVPN-OVERLAY | extcommunity soo 10.99.101.11:101 additive | - | - |
+| 10 | permit | ip address prefix-list PL-LOOPBACKS-EVPN-OVERLAY | extcommunity soo 10.99.201.21:201 additive | - | - |
 
 ##### RM-EVPN-EXPORT-VRF-DEFAULT
 
@@ -672,7 +672,7 @@ ip prefix-list PL-LOOPBACKS-EVPN-OVERLAY
 
 | Sequence | Type | Match | Set | Sub-Route-Map | Continue |
 | -------- | ---- | ----- | --- | ------------- | -------- |
-| 10 | permit | - | extcommunity soo 10.99.101.11:101 additive | - | - |
+| 10 | permit | - | extcommunity soo 10.99.201.21:201 additive | - | - |
 
 #### Route-maps Device Configuration
 
@@ -680,7 +680,7 @@ ip prefix-list PL-LOOPBACKS-EVPN-OVERLAY
 !
 route-map RM-CONN-2-BGP permit 10
    match ip address prefix-list PL-LOOPBACKS-EVPN-OVERLAY
-   set extcommunity soo 10.99.101.11:101 additive
+   set extcommunity soo 10.99.201.21:201 additive
 !
 route-map RM-EVPN-EXPORT-VRF-DEFAULT permit 10
    match extcommunity ECL-EVPN-SOO
@@ -691,7 +691,7 @@ route-map RM-EVPN-SOO-IN deny 10
 route-map RM-EVPN-SOO-IN permit 20
 !
 route-map RM-EVPN-SOO-OUT permit 10
-   set extcommunity soo 10.99.101.11:101 additive
+   set extcommunity soo 10.99.201.21:201 additive
 ```
 
 ### IP Extended Community Lists
@@ -700,13 +700,13 @@ route-map RM-EVPN-SOO-OUT permit 10
 
 | List Name | Type | Extended Communities |
 | --------- | ---- | -------------------- |
-| ECL-EVPN-SOO | permit | soo 10.99.101.11:101 |
+| ECL-EVPN-SOO | permit | soo 10.99.201.21:201 |
 
 #### IP Extended Community Lists Device Configuration
 
 ```eos
 !
-ip extcommunity-list ECL-EVPN-SOO permit soo 10.99.101.11:101
+ip extcommunity-list ECL-EVPN-SOO permit soo 10.99.201.21:201
 ```
 
 ## VRF Instances

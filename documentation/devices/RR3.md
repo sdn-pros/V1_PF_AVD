@@ -5,11 +5,6 @@
 - [Management](#management)
   - [Agents](#agents)
   - [Management API HTTP](#management-api-http)
-- [Management Security](#management-security)
-  - [Management Security Summary](#management-security-summary)
-  - [Management Security SSL Profiles](#management-security-ssl-profiles)
-  - [SSL profile STUN-DTLS Certificates Summary](#ssl-profile-stun-dtls-certificates-summary)
-  - [Management Security Device Configuration](#management-security-device-configuration)
 - [Monitoring](#monitoring)
   - [Flow Tracking](#flow-tracking)
 - [Spanning Tree](#spanning-tree)
@@ -99,36 +94,6 @@ management api http-commands
       no shutdown
 ```
 
-## Management Security
-
-### Management Security Summary
-
-| Settings | Value |
-| -------- | ----- |
-
-### Management Security SSL Profiles
-
-| SSL Profile Name | TLS protocol accepted | Certificate filename | Key filename | Cipher List | CRLs |
-| ---------------- | --------------------- | -------------------- | ------------ | ----------- | ---- |
-| STUN-DTLS | 1.2 | STUN-DTLS.crt | STUN-DTLS.key | - | - |
-
-### SSL profile STUN-DTLS Certificates Summary
-
-| Trust Certificates | Requirement | Policy | System |
-| ------------------ | ----------- | ------ | ------ |
-| aristaDeviceCertProvisionerDefaultRootCA.crt | - | - | - |
-
-### Management Security Device Configuration
-
-```eos
-!
-management security
-   ssl profile STUN-DTLS
-      tls versions 1.2
-      trust certificate aristaDeviceCertProvisionerDefaultRootCA.crt
-      certificate STUN-DTLS.crt key STUN-DTLS.key
-```
-
 ## Monitoring
 
 ### Flow Tracking
@@ -181,7 +146,7 @@ spanning-tree mode none
 
 | Policy name | IKE lifetime | Encryption | DH group | Local ID |
 | ----------- | ------------ | ---------- | -------- | -------- |
-| CP-IKE-POLICY | - | - | - | 10.99.98.13 |
+| CP-IKE-POLICY | - | - | - | 10.99.102.3 |
 
 ### Security Association policies
 
@@ -202,7 +167,7 @@ spanning-tree mode none
 ip security
    !
    ike policy CP-IKE-POLICY
-      local-id 10.99.98.13
+      local-id 10.99.102.3
    !
    sa policy CP-SA-POLICY
       esp encryption aes256gcm128
@@ -225,7 +190,7 @@ ip security
 
 | Interface | IP address | Shutdown | MTU | Flow tracker(s) | TCP MSS Ceiling |
 | --------- | ---------- | -------- | --- | --------------- | --------------- |
-| Dps1 | 10.99.98.13/32 | - | 9214 | Hardware: FLOW-TRACKER |  |
+| Dps1 | 10.99.102.3/32 | - | 9214 | Hardware: FLOW-TRACKER |  |
 
 #### DPS Interfaces Device Configuration
 
@@ -235,7 +200,7 @@ interface Dps1
    description DPS Interface
    mtu 9214
    flow tracker hardware FLOW-TRACKER
-   ip address 10.99.98.13/32
+   ip address 10.99.102.3/32
 ```
 
 ### Ethernet Interfaces
@@ -281,7 +246,7 @@ interface Ethernet3
 
 | Interface | Description | VRF | IP Address |
 | --------- | ----------- | --- | ---------- |
-| Loopback0 | Router_ID | default | 10.99.99.13/32 |
+| Loopback0 | Router_ID | default | 10.99.101.3/32 |
 
 ##### IPv6
 
@@ -296,7 +261,7 @@ interface Ethernet3
 interface Loopback0
    description Router_ID
    no shutdown
-   ip address 10.99.99.13/32
+   ip address 10.99.101.3/32
 ```
 
 ### VXLAN Interface
@@ -477,11 +442,11 @@ ASN Notation: asplain
 
 | BGP AS | Router ID |
 | ------ | --------- |
-| 65000 | 10.99.99.13 |
+| 65000 | 10.99.101.3 |
 
 | BGP AS | Cluster ID |
 | ------ | --------- |
-| 65000 | 10.99.99.13 |
+| 65000 | 10.99.101.3 |
 
 | BGP Tuning |
 | ---------- |
@@ -496,8 +461,6 @@ ASN Notation: asplain
 | 10.99.102.0/24 | - | WAN-OVERLAY-PEERS | - | 65000 | default |
 | 10.99.201.0/24 | - | WAN-OVERLAY-PEERS | - | 65000 | default |
 | 10.99.202.0/24 | - | WAN-OVERLAY-PEERS | - | 65000 | default |
-| 10.99.99.0/24 | - | WAN-OVERLAY-PEERS | - | 65000 | default |
-| 10.99.98.0/24 | - | WAN-OVERLAY-PEERS | - | 65000 | default |
 
 #### Router BGP Peer Groups
 
@@ -515,6 +478,28 @@ ASN Notation: asplain
 | Send community | all |
 | Maximum routes | 0 (no limit) |
 
+##### WAN-RR-OVERLAY-PEERS
+
+| Settings | Value |
+| -------- | ----- |
+| Address Family | wan |
+| Remote AS | 65000 |
+| Route Reflector Client | Yes |
+| Source | Dps1 |
+| BFD | True |
+| BFD Timers | interval: 1000, min_rx: 1000, multiplier: 10 |
+| TTL Max Hops | 1 |
+| Send community | all |
+| Maximum routes | 0 (no limit) |
+
+#### BGP Neighbors
+
+| Neighbor | Remote AS | VRF | Shutdown | Send-community | Maximum-routes | Allowas-in | BFD | RIB Pre-Policy Retain | Route-Reflector Client | Passive | TTL Max Hops |
+| -------- | --------- | --- | -------- | -------------- | -------------- | ---------- | --- | --------------------- | ---------------------- | ------- | ------------ |
+| 10.99.102.1 | Inherited from peer group WAN-RR-OVERLAY-PEERS | default | - | Inherited from peer group WAN-RR-OVERLAY-PEERS | Inherited from peer group WAN-RR-OVERLAY-PEERS | - | Inherited from peer group WAN-RR-OVERLAY-PEERS(interval: 1000, min_rx: 1000, multiplier: 10) | - | Inherited from peer group WAN-RR-OVERLAY-PEERS | - | Inherited from peer group WAN-RR-OVERLAY-PEERS |
+| 10.99.102.2 | Inherited from peer group WAN-RR-OVERLAY-PEERS | default | - | Inherited from peer group WAN-RR-OVERLAY-PEERS | Inherited from peer group WAN-RR-OVERLAY-PEERS | - | Inherited from peer group WAN-RR-OVERLAY-PEERS(interval: 1000, min_rx: 1000, multiplier: 10) | - | Inherited from peer group WAN-RR-OVERLAY-PEERS | - | Inherited from peer group WAN-RR-OVERLAY-PEERS |
+| 10.99.102.4 | Inherited from peer group WAN-RR-OVERLAY-PEERS | default | - | Inherited from peer group WAN-RR-OVERLAY-PEERS | Inherited from peer group WAN-RR-OVERLAY-PEERS | - | Inherited from peer group WAN-RR-OVERLAY-PEERS(interval: 1000, min_rx: 1000, multiplier: 10) | - | Inherited from peer group WAN-RR-OVERLAY-PEERS | - | Inherited from peer group WAN-RR-OVERLAY-PEERS |
+
 #### Router BGP EVPN Address Family
 
 - Next-hop resolution is **disabled**
@@ -524,6 +509,7 @@ ASN Notation: asplain
 | Peer Group | Activate | Encapsulation |
 | ---------- | -------- | ------------- |
 | WAN-OVERLAY-PEERS | True | default |
+| WAN-RR-OVERLAY-PEERS | True | default |
 
 #### Router BGP IPv4 SR-TE Address Family
 
@@ -532,6 +518,7 @@ ASN Notation: asplain
 | Peer Group | Activate | Route-map In | Route-map Out |
 | ---------- | -------- | ------------ | ------------- |
 | WAN-OVERLAY-PEERS | True | - | - |
+| WAN-RR-OVERLAY-PEERS | True | - | - |
 
 #### Router BGP Link-State Address Family
 
@@ -540,6 +527,7 @@ ASN Notation: asplain
 | Peer Group | Activate | Missing policy In action | Missing policy Out action |
 | ---------- | -------- | ------------------------ | ------------------------- |
 | WAN-OVERLAY-PEERS | True | - | deny |
+| WAN-RR-OVERLAY-PEERS | True | - | - |
 
 ##### Link-State Path Selection Configuration
 
@@ -554,29 +542,28 @@ ASN Notation: asplain
 | Peer Group | Activate |
 | ---------- | -------- |
 | WAN-OVERLAY-PEERS | True |
+| WAN-RR-OVERLAY-PEERS | True |
 
 #### Router BGP VRFs
 
 | VRF | Route-Distinguisher | Redistribute |
 | --- | ------------------- | ------------ |
-| default | 10.99.99.13:1 | - |
-| VRF_A | 10.99.99.13:101 | connected |
+| default | 10.99.101.3:101 | - |
+| VRF_A | 10.99.101.3:102 | connected |
 
 #### Router BGP Device Configuration
 
 ```eos
 !
 router bgp 65000
-   router-id 10.99.99.13
+   router-id 10.99.101.3
    maximum-paths 16
    no bgp default ipv4-unicast
-   bgp cluster-id 10.99.99.13
+   bgp cluster-id 10.99.101.3
    bgp listen range 10.99.101.0/24 peer-group WAN-OVERLAY-PEERS remote-as 65000
    bgp listen range 10.99.102.0/24 peer-group WAN-OVERLAY-PEERS remote-as 65000
    bgp listen range 10.99.201.0/24 peer-group WAN-OVERLAY-PEERS remote-as 65000
    bgp listen range 10.99.202.0/24 peer-group WAN-OVERLAY-PEERS remote-as 65000
-   bgp listen range 10.99.99.0/24 peer-group WAN-OVERLAY-PEERS remote-as 65000
-   bgp listen range 10.99.98.0/24 peer-group WAN-OVERLAY-PEERS remote-as 65000
    neighbor WAN-OVERLAY-PEERS peer group
    neighbor WAN-OVERLAY-PEERS remote-as 65000
    neighbor WAN-OVERLAY-PEERS update-source Dps1
@@ -584,42 +571,61 @@ router bgp 65000
    neighbor WAN-OVERLAY-PEERS bfd
    neighbor WAN-OVERLAY-PEERS bfd interval 1000 min-rx 1000 multiplier 10
    neighbor WAN-OVERLAY-PEERS ttl maximum-hops 1
-   neighbor WAN-OVERLAY-PEERS password 7 <removed>
    neighbor WAN-OVERLAY-PEERS send-community
    neighbor WAN-OVERLAY-PEERS maximum-routes 0
+   neighbor WAN-RR-OVERLAY-PEERS peer group
+   neighbor WAN-RR-OVERLAY-PEERS remote-as 65000
+   neighbor WAN-RR-OVERLAY-PEERS update-source Dps1
+   neighbor WAN-RR-OVERLAY-PEERS route-reflector-client
+   neighbor WAN-RR-OVERLAY-PEERS bfd
+   neighbor WAN-RR-OVERLAY-PEERS bfd interval 1000 min-rx 1000 multiplier 10
+   neighbor WAN-RR-OVERLAY-PEERS ttl maximum-hops 1
+   neighbor WAN-RR-OVERLAY-PEERS send-community
+   neighbor WAN-RR-OVERLAY-PEERS maximum-routes 0
+   neighbor 10.99.102.1 peer group WAN-RR-OVERLAY-PEERS
+   neighbor 10.99.102.1 description RR1
+   neighbor 10.99.102.2 peer group WAN-RR-OVERLAY-PEERS
+   neighbor 10.99.102.2 description RR2
+   neighbor 10.99.102.4 peer group WAN-RR-OVERLAY-PEERS
+   neighbor 10.99.102.4 description RR4
    redistribute connected route-map RM-CONN-2-BGP
    !
    address-family evpn
       neighbor WAN-OVERLAY-PEERS activate
+      neighbor WAN-RR-OVERLAY-PEERS activate
       next-hop resolution disabled
    !
    address-family ipv4
       no neighbor WAN-OVERLAY-PEERS activate
+      no neighbor WAN-RR-OVERLAY-PEERS activate
    !
    address-family ipv4 sr-te
       neighbor WAN-OVERLAY-PEERS activate
+      neighbor WAN-RR-OVERLAY-PEERS activate
    !
    address-family link-state
       neighbor WAN-OVERLAY-PEERS activate
       neighbor WAN-OVERLAY-PEERS missing-policy direction out action deny
+      neighbor WAN-RR-OVERLAY-PEERS activate
       path-selection role consumer propagator
    !
    address-family path-selection
       bgp additional-paths receive
       bgp additional-paths send any
       neighbor WAN-OVERLAY-PEERS activate
+      neighbor WAN-RR-OVERLAY-PEERS activate
    !
    vrf default
-      rd 10.99.99.13:1
-      route-target import evpn 65000:1
-      route-target export evpn 65000:1
+      rd 10.99.101.3:101
+      route-target import evpn 65000:101
+      route-target export evpn 65000:101
       route-target export evpn route-map RM-EVPN-EXPORT-VRF-DEFAULT
    !
    vrf VRF_A
-      rd 10.99.99.13:101
-      route-target import evpn 65000:101
-      route-target export evpn 65000:101
-      router-id 10.99.99.13
+      rd 10.99.101.3:102
+      route-target import evpn 65000:102
+      route-target export evpn 65000:102
+      router-id 10.99.101.3
       redistribute connected
 ```
 
@@ -651,14 +657,14 @@ router bfd
 
 | Sequence | Action |
 | -------- | ------ |
-| 10 | permit 10.99.99.0/24 eq 32 |
+| 10 | permit 10.99.101.0/24 eq 32 |
 
 #### Prefix-lists Device Configuration
 
 ```eos
 !
 ip prefix-list PL-LOOPBACKS-EVPN-OVERLAY
-   seq 10 permit 10.99.99.0/24 eq 32
+   seq 10 permit 10.99.101.0/24 eq 32
 ```
 
 ### Route-maps
@@ -669,7 +675,7 @@ ip prefix-list PL-LOOPBACKS-EVPN-OVERLAY
 
 | Sequence | Type | Match | Set | Sub-Route-Map | Continue |
 | -------- | ---- | ----- | --- | ------------- | -------- |
-| 10 | permit | ip address prefix-list PL-LOOPBACKS-EVPN-OVERLAY | extcommunity soo 10.99.99.13:0 additive | - | - |
+| 10 | permit | ip address prefix-list PL-LOOPBACKS-EVPN-OVERLAY | extcommunity soo 10.99.101.3:0 additive | - | - |
 
 ##### RM-EVPN-EXPORT-VRF-DEFAULT
 
@@ -683,7 +689,7 @@ ip prefix-list PL-LOOPBACKS-EVPN-OVERLAY
 !
 route-map RM-CONN-2-BGP permit 10
    match ip address prefix-list PL-LOOPBACKS-EVPN-OVERLAY
-   set extcommunity soo 10.99.99.13:0 additive
+   set extcommunity soo 10.99.101.3:0 additive
 !
 route-map RM-EVPN-EXPORT-VRF-DEFAULT permit 10
    match extcommunity ECL-EVPN-SOO
@@ -695,13 +701,13 @@ route-map RM-EVPN-EXPORT-VRF-DEFAULT permit 10
 
 | List Name | Type | Extended Communities |
 | --------- | ---- | -------------------- |
-| ECL-EVPN-SOO | permit | soo 10.99.99.13:0 |
+| ECL-EVPN-SOO | permit | soo 10.99.101.3:0 |
 
 #### IP Extended Community Lists Device Configuration
 
 ```eos
 !
-ip extcommunity-list ECL-EVPN-SOO permit soo 10.99.99.13:0
+ip extcommunity-list ECL-EVPN-SOO permit soo 10.99.101.3:0
 ```
 
 ## VRF Instances
@@ -763,7 +769,7 @@ platform sfe data-plane cpu allocation maximum 1
 
 | Name | Prefixes |
 | ---- | -------- |
-| PFX-LOCAL-VTEP-IP | 10.99.98.13/32 |
+| PFX-LOCAL-VTEP-IP | 10.99.102.3/32 |
 
 ### Router Application-Traffic-Recognition Device Configuration
 
@@ -778,7 +784,7 @@ application traffic recognition
       application APP-CONTROL-PLANE
    !
    field-set ipv4 prefix PFX-LOCAL-VTEP-IP
-      10.99.98.13/32
+      10.99.102.3/32
 ```
 
 ### Router Path-selection
@@ -810,6 +816,14 @@ application traffic recognition
 | -------------- | -------------- | ---------------------- |
 | Ethernet3 | - |  |
 
+###### Static Peers
+
+| Router IP | Name | IPv4 address(es) |
+| --------- | ---- | ---------------- |
+| 10.99.102.1 | RR1 | 192.16.71.2 |
+| 10.99.102.2 | RR2 | 192.16.72.2 |
+| 10.99.102.4 | RR4 | 192.26.77.2 |
+
 ##### Path Group LAN_HA
 
 | Setting | Value |
@@ -829,6 +843,14 @@ application traffic recognition
 | Interface name | Public address | STUN server profile(s) |
 | -------------- | -------------- | ---------------------- |
 | Ethernet2 | - |  |
+
+###### Static Peers
+
+| Router IP | Name | IPv4 address(es) |
+| --------- | ---- | ---------------- |
+| 10.99.102.1 | RR1 | 192.15.71.2 |
+| 10.99.102.2 | RR2 | 192.15.72.2 |
+| 10.99.102.4 | RR4 | 192.25.77.2 |
 
 #### Load-balance Policies
 
@@ -850,6 +872,18 @@ router path-selection
       ipsec profile CP-PROFILE
       !
       local interface Ethernet3
+      !
+      peer static router-ip 10.99.102.1
+         name RR1
+         ipv4 address 192.16.71.2
+      !
+      peer static router-ip 10.99.102.2
+         name RR2
+         ipv4 address 192.16.72.2
+      !
+      peer static router-ip 10.99.102.4
+         name RR4
+         ipv4 address 192.26.77.2
    !
    path-group LAN_HA id 65535
       flow assignment lan
@@ -858,6 +892,18 @@ router path-selection
       ipsec profile CP-PROFILE
       !
       local interface Ethernet2
+      !
+      peer static router-ip 10.99.102.1
+         name RR1
+         ipv4 address 192.15.71.2
+      !
+      peer static router-ip 10.99.102.2
+         name RR2
+         ipv4 address 192.15.72.2
+      !
+      peer static router-ip 10.99.102.4
+         name RR4
+         ipv4 address 192.25.77.2
    !
    load-balance policy LB-DEFAULT-AVT-POLICY-DEFAULT
       path-group internet_path
@@ -881,7 +927,7 @@ router path-selection
 
 | Server Local Interfaces | Bindings Timeout (s) | SSL Profile | SSL Connection Lifetime | Port |
 | ----------------------- | -------------------- | ----------- | ----------------------- | ---- |
-| Ethernet2<br>Ethernet3 | - | STUN-DTLS | - | 3478 |
+| Ethernet2<br>Ethernet3 | - | - | - | 3478 |
 
 ### STUN Device Configuration
 
@@ -891,5 +937,4 @@ stun
    server
       local-interface Ethernet2
       local-interface Ethernet3
-      ssl profile STUN-DTLS
 ```

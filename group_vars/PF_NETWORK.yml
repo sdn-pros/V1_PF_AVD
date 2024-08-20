@@ -7,7 +7,7 @@ fabric_name: PF_NETWORK
 bgp_update_wait_install: false
 
 # Can also be just autovpn
-
+wan_stun_dtls_disable: true
 wan_mode: cv-pathfinder
 
 bgp_as: 65000
@@ -25,11 +25,17 @@ cv_pathfinder_regions:
         id: 103
       - name: SITE14
         id: 104
-  # - name: REGION2
-  #   id: 2
-  #   sites:
-  #     - name: SITE2
-  #       id: 201
+  - name: REGION2
+    id: 2
+    sites:
+      - name: SITE21
+        id: 201
+      - name: SITE22
+        id: 202
+      - name: SITE23
+        id: 203
+      - name: SITE24
+        id: 204
 
 
 # You really want to use passwords here, as lots of critical info is reflected/served from these BGP servers
@@ -42,16 +48,14 @@ bgp_peer_groups:
       - 10.99.102.0/24
       - 10.99.201.0/24
       - 10.99.202.0/24
-      - 10.99.99.0/24
-      - 10.99.98.0/24
 
 
 # Wan_route_server is Pathfinder
-wan_route_server:
+wan_route_servers:
   - hostname: RR1
   - hostname: RR2
-  # - hostname: RR3
-  # - hosntame: RR4
+  - hostname: RR3
+  - hostname: RR4
 
 wan_ipsec_profiles:
   control_plane:

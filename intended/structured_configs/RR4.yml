@@ -1,8 +1,8 @@
-hostname: RR1
+hostname: RR4
 is_deployed: true
 router_bgp:
   as: '65000'
-  router_id: 10.99.101.1
+  router_id: 10.99.101.4
   bgp:
     default:
       ipv4_unicast: false
@@ -11,7 +11,7 @@ router_bgp:
   redistribute_routes:
   - source_protocol: connected
     route_map: RM-CONN-2-BGP
-  bgp_cluster_id: 10.99.101.1
+  bgp_cluster_id: 10.99.101.4
   listen_ranges:
   - prefix: 10.99.101.0/24
     peer_group: WAN-OVERLAY-PEERS
@@ -96,6 +96,10 @@ router_bgp:
         send:
           any: true
   neighbors:
+  - ip_address: 10.99.102.1
+    peer_group: WAN-RR-OVERLAY-PEERS
+    peer: RR1
+    description: RR1
   - ip_address: 10.99.102.2
     peer_group: WAN-RR-OVERLAY-PEERS
     peer: RR2
@@ -104,13 +108,9 @@ router_bgp:
     peer_group: WAN-RR-OVERLAY-PEERS
     peer: RR3
     description: RR3
-  - ip_address: 10.99.102.4
-    peer_group: WAN-RR-OVERLAY-PEERS
-    peer: RR4
-    description: RR4
   vrfs:
   - name: default
-    rd: 10.99.101.1:101
+    rd: 10.99.101.4:101
     route_targets:
       import:
       - address_family: evpn
@@ -122,8 +122,8 @@ router_bgp:
         - 65000:101
         - route-map RM-EVPN-EXPORT-VRF-DEFAULT
   - name: VRF_A
-    router_id: 10.99.101.1
-    rd: 10.99.101.1:102
+    router_id: 10.99.101.4
+    rd: 10.99.101.4:102
     route_targets:
       import:
       - address_family: evpn
@@ -156,13 +156,13 @@ management_api_http:
 ethernet_interfaces:
 - name: Ethernet2
   peer_type: l3_interface
-  ip_address: 192.15.71.2/24
+  ip_address: 192.25.77.2/24
   shutdown: false
   type: routed
   description: mpls
 - name: Ethernet3
   peer_type: l3_interface
-  ip_address: 192.16.71.2/24
+  ip_address: 192.26.77.2/24
   shutdown: false
   type: routed
   description: internet
@@ -170,7 +170,7 @@ loopback_interfaces:
 - name: Loopback0
   description: Router_ID
   shutdown: false
-  ip_address: 10.99.101.1/32
+  ip_address: 10.99.101.4/32
 prefix_lists:
 - name: PL-LOOPBACKS-EVPN-OVERLAY
   sequence_numbers:
@@ -184,7 +184,7 @@ route_maps:
     match:
     - ip address prefix-list PL-LOOPBACKS-EVPN-OVERLAY
     set:
-    - extcommunity soo 10.99.101.1:0 additive
+    - extcommunity soo 10.99.101.4:0 additive
 - name: RM-EVPN-EXPORT-VRF-DEFAULT
   sequence_numbers:
   - sequence: 10
@@ -200,11 +200,11 @@ ip_extcommunity_lists:
 - name: ECL-EVPN-SOO
   entries:
   - type: permit
-    extcommunities: soo 10.99.101.1:0
+    extcommunities: soo 10.99.101.4:0
 ip_security:
   ike_policies:
   - name: CP-IKE-POLICY
-    local_id: 10.99.102.1
+    local_id: 10.99.102.4
   sa_policies:
   - name: CP-SA-POLICY
     esp:
@@ -268,6 +268,10 @@ router_path_selection:
     local_interfaces:
     - name: Ethernet2
     static_peers:
+    - router_ip: 10.99.102.1
+      name: RR1
+      ipv4_addresses:
+      - 192.15.71.2
     - router_ip: 10.99.102.2
       name: RR2
       ipv4_addresses:
@@ -276,16 +280,16 @@ router_path_selection:
       name: RR3
       ipv4_addresses:
       - 192.25.76.2
-    - router_ip: 10.99.102.4
-      name: RR4
-      ipv4_addresses:
-      - 192.25.77.2
     ipsec_profile: CP-PROFILE
   - name: internet_path
     id: 1002
     local_interfaces:
     - name: Ethernet3
     static_peers:
+    - router_ip: 10.99.102.1
+      name: RR1
+      ipv4_addresses:
+      - 192.16.71.2
     - router_ip: 10.99.102.2
       name: RR2
       ipv4_addresses:
@@ -294,10 +298,6 @@ router_path_selection:
       name: RR3
       ipv4_addresses:
       - 192.26.76.2
-    - router_ip: 10.99.102.4
-      name: RR4
-      ipv4_addresses:
-      - 192.26.77.2
     ipsec_profile: CP-PROFILE
   - name: LAN_HA
     id: 65535
@@ -339,17 +339,17 @@ application_traffic_recognition:
     ipv4_prefixes:
     - name: PFX-LOCAL-VTEP-IP
       prefix_values:
-      - 10.99.102.1/32
+      - 10.99.102.4/32
 dps_interfaces:
 - name: Dps1
   description: DPS Interface
   mtu: 9214
-  ip_address: 10.99.102.1/32
+  ip_address: 10.99.102.4/32
   flow_tracker:
     hardware: FLOW-TRACKER
 vxlan_interface:
   Vxlan1:
-    description: RR1_VTEP
+    description: RR4_VTEP
     vxlan:
       udp_port: 4789
       source_interface: Dps1
@@ -366,17 +366,17 @@ metadata:
         user_defined_applications:
         - name: APP-CONTROL-PLANE
     role: pathfinder
-    vtep_ip: 10.99.102.1
-    region: REGION1
+    vtep_ip: 10.99.102.4
+    region: REGION2
     interfaces:
     - name: Ethernet2
       carrier: mpls
       pathgroup: mpls_path
-      public_ip: 192.15.71.2
+      public_ip: 192.25.77.2
     - name: Ethernet3
       carrier: internet
       pathgroup: internet_path
-      public_ip: 192.16.71.2
+      public_ip: 192.26.77.2
     pathgroups:
     - name: mpls_path
       carriers:
@@ -454,7 +454,7 @@ metadata:
     - name: Role
       value: pathfinder
     - name: Region
-      value: REGION1
+      value: REGION2
     - name: PathfinderSet
       value: PATHFINDERS
     interface_tags:

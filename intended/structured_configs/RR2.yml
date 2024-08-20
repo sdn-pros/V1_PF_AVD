@@ -2,7 +2,7 @@ hostname: RR2
 is_deployed: true
 router_bgp:
   as: '65000'
-  router_id: 10.99.99.12
+  router_id: 10.99.101.2
   bgp:
     default:
       ipv4_unicast: false
@@ -11,7 +11,7 @@ router_bgp:
   redistribute_routes:
   - source_protocol: connected
     route_map: RM-CONN-2-BGP
-  bgp_cluster_id: 10.99.99.12
+  bgp_cluster_id: 10.99.101.2
   listen_ranges:
   - prefix: 10.99.101.0/24
     peer_group: WAN-OVERLAY-PEERS
@@ -23,12 +23,6 @@ router_bgp:
     peer_group: WAN-OVERLAY-PEERS
     remote_as: '65000'
   - prefix: 10.99.202.0/24
-    peer_group: WAN-OVERLAY-PEERS
-    remote_as: '65000'
-  - prefix: 10.99.99.0/24
-    peer_group: WAN-OVERLAY-PEERS
-    remote_as: '65000'
-  - prefix: 10.99.98.0/24
     peer_group: WAN-OVERLAY-PEERS
     remote_as: '65000'
   peer_groups:
@@ -45,9 +39,24 @@ router_bgp:
       interval: 1000
       min_rx: 1000
       multiplier: 10
+  - name: WAN-RR-OVERLAY-PEERS
+    type: wan
+    update_source: Dps1
+    bfd: true
+    send_community: all
+    maximum_routes: 0
+    remote_as: '65000'
+    ttl_maximum_hops: 1
+    bfd_timers:
+      interval: 1000
+      min_rx: 1000
+      multiplier: 10
+    route_reflector_client: true
   address_family_evpn:
     peer_groups:
     - name: WAN-OVERLAY-PEERS
+      activate: true
+    - name: WAN-RR-OVERLAY-PEERS
       activate: true
     next_hop:
       resolution_disabled: true
@@ -55,9 +64,13 @@ router_bgp:
     peer_groups:
     - name: WAN-OVERLAY-PEERS
       activate: false
+    - name: WAN-RR-OVERLAY-PEERS
+      activate: false
   address_family_ipv4_sr_te:
     peer_groups:
     - name: WAN-OVERLAY-PEERS
+      activate: true
+    - name: WAN-RR-OVERLAY-PEERS
       activate: true
   address_family_link_state:
     peer_groups:
@@ -65,6 +78,8 @@ router_bgp:
       activate: true
       missing_policy:
         direction_out_action: deny
+    - name: WAN-RR-OVERLAY-PEERS
+      activate: true
     path_selection:
       roles:
         consumer: true
@@ -73,14 +88,29 @@ router_bgp:
     peer_groups:
     - name: WAN-OVERLAY-PEERS
       activate: true
+    - name: WAN-RR-OVERLAY-PEERS
+      activate: true
     bgp:
       additional_paths:
         receive: true
         send:
           any: true
+  neighbors:
+  - ip_address: 10.99.102.1
+    peer_group: WAN-RR-OVERLAY-PEERS
+    peer: RR1
+    description: RR1
+  - ip_address: 10.99.102.3
+    peer_group: WAN-RR-OVERLAY-PEERS
+    peer: RR3
+    description: RR3
+  - ip_address: 10.99.102.4
+    peer_group: WAN-RR-OVERLAY-PEERS
+    peer: RR4
+    description: RR4
   vrfs:
   - name: default
-    rd: 10.99.99.12:101
+    rd: 10.99.101.2:101
     route_targets:
       import:
       - address_family: evpn
@@ -92,8 +122,8 @@ router_bgp:
         - 65000:101
         - route-map RM-EVPN-EXPORT-VRF-DEFAULT
   - name: VRF_A
-    router_id: 10.99.99.12
-    rd: 10.99.99.12:102
+    router_id: 10.99.101.2
+    rd: 10.99.101.2:102
     route_targets:
       import:
       - address_family: evpn
@@ -140,12 +170,12 @@ loopback_interfaces:
 - name: Loopback0
   description: Router_ID
   shutdown: false
-  ip_address: 10.99.99.12/32
+  ip_address: 10.99.101.2/32
 prefix_lists:
 - name: PL-LOOPBACKS-EVPN-OVERLAY
   sequence_numbers:
   - sequence: 10
-    action: permit 10.99.99.0/24 eq 32
+    action: permit 10.99.101.0/24 eq 32
 route_maps:
 - name: RM-CONN-2-BGP
   sequence_numbers:
@@ -154,7 +184,7 @@ route_maps:
     match:
     - ip address prefix-list PL-LOOPBACKS-EVPN-OVERLAY
     set:
-    - extcommunity soo 10.99.99.12:0 additive
+    - extcommunity soo 10.99.101.2:0 additive
 - name: RM-EVPN-EXPORT-VRF-DEFAULT
   sequence_numbers:
   - sequence: 10
@@ -170,11 +200,11 @@ ip_extcommunity_lists:
 - name: ECL-EVPN-SOO
   entries:
   - type: permit
-    extcommunities: soo 10.99.99.12:0
+    extcommunities: soo 10.99.101.2:0
 ip_security:
   ike_policies:
   - name: CP-IKE-POLICY
-    local_id: 10.99.98.12
+    local_id: 10.99.102.2
   sa_policies:
   - name: CP-SA-POLICY
     esp:
@@ -191,16 +221,6 @@ ip_security:
       time: 50
       action: clear
     mode: transport
-management_security:
-  ssl_profiles:
-  - name: STUN-DTLS
-    certificate:
-      file: STUN-DTLS.crt
-      key: STUN-DTLS.key
-    trust_certificate:
-      certificates:
-      - aristaDeviceCertProvisionerDefaultRootCA.crt
-    tls_versions: '1.2'
 router_adaptive_virtual_topology:
   topology_role: pathfinder
   profiles:
@@ -247,11 +267,37 @@ router_path_selection:
     id: 1001
     local_interfaces:
     - name: Ethernet2
+    static_peers:
+    - router_ip: 10.99.102.1
+      name: RR1
+      ipv4_addresses:
+      - 192.15.71.2
+    - router_ip: 10.99.102.3
+      name: RR3
+      ipv4_addresses:
+      - 192.25.76.2
+    - router_ip: 10.99.102.4
+      name: RR4
+      ipv4_addresses:
+      - 192.25.77.2
     ipsec_profile: CP-PROFILE
   - name: internet_path
     id: 1002
     local_interfaces:
     - name: Ethernet3
+    static_peers:
+    - router_ip: 10.99.102.1
+      name: RR1
+      ipv4_addresses:
+      - 192.16.71.2
+    - router_ip: 10.99.102.3
+      name: RR3
+      ipv4_addresses:
+      - 192.26.76.2
+    - router_ip: 10.99.102.4
+      name: RR4
+      ipv4_addresses:
+      - 192.26.77.2
     ipsec_profile: CP-PROFILE
   - name: LAN_HA
     id: 65535
@@ -280,7 +326,6 @@ stun:
     local_interfaces:
     - Ethernet2
     - Ethernet3
-    ssl_profile: STUN-DTLS
 application_traffic_recognition:
   application_profiles:
   - name: APP-PROFILE-CONTROL-PLANE
@@ -294,12 +339,12 @@ application_traffic_recognition:
     ipv4_prefixes:
     - name: PFX-LOCAL-VTEP-IP
       prefix_values:
-      - 10.99.98.12/32
+      - 10.99.102.2/32
 dps_interfaces:
 - name: Dps1
   description: DPS Interface
   mtu: 9214
-  ip_address: 10.99.98.12/32
+  ip_address: 10.99.102.2/32
   flow_tracker:
     hardware: FLOW-TRACKER
 vxlan_interface:
@@ -321,8 +366,7 @@ metadata:
         user_defined_applications:
         - name: APP-CONTROL-PLANE
     role: pathfinder
-    ssl_profile: STUN-DTLS
-    vtep_ip: 10.99.98.12
+    vtep_ip: 10.99.102.2
     region: REGION1
     interfaces:
     - name: Ethernet2
@@ -355,6 +399,20 @@ metadata:
           id: 103
         - name: SITE14
           id: 104
+    - name: REGION2
+      id: 2
+      zones:
+      - name: REGION2-ZONE
+        id: 1
+        sites:
+        - name: SITE21
+          id: 201
+        - name: SITE22
+          id: 202
+        - name: SITE23
+          id: 203
+        - name: SITE24
+          id: 204
     vrfs:
     - name: VRF_A
       vni: 101

@@ -2,7 +2,7 @@ hostname: Edge10
 is_deployed: true
 router_bgp:
   as: '65000'
-  router_id: 10.99.101.1
+  router_id: 10.99.101.11
   bgp:
     default:
       ipv4_unicast: false
@@ -54,9 +54,26 @@ router_bgp:
         receive: true
         send:
           any: true
+  neighbors:
+  - ip_address: 10.99.102.1
+    peer_group: WAN-OVERLAY-PEERS
+    peer: RR1
+    description: RR1
+  - ip_address: 10.99.102.2
+    peer_group: WAN-OVERLAY-PEERS
+    peer: RR2
+    description: RR2
+  - ip_address: 10.99.102.3
+    peer_group: WAN-OVERLAY-PEERS
+    peer: RR3
+    description: RR3
+  - ip_address: 10.99.102.4
+    peer_group: WAN-OVERLAY-PEERS
+    peer: RR4
+    description: RR4
   vrfs:
   - name: default
-    rd: 10.99.101.1:101
+    rd: 10.99.101.11:101
     route_targets:
       import:
       - address_family: evpn
@@ -68,8 +85,8 @@ router_bgp:
         - 65000:101
         - route-map RM-EVPN-EXPORT-VRF-DEFAULT
   - name: VRF_A
-    router_id: 10.99.101.1
-    rd: 10.99.101.1:102
+    router_id: 10.99.101.11
+    rd: 10.99.101.11:102
     route_targets:
       import:
       - address_family: evpn
@@ -113,7 +130,7 @@ loopback_interfaces:
 - name: Loopback0
   description: Router_ID
   shutdown: false
-  ip_address: 10.99.101.1/32
+  ip_address: 10.99.101.11/32
 prefix_lists:
 - name: PL-LOOPBACKS-EVPN-OVERLAY
   sequence_numbers:
@@ -127,7 +144,7 @@ route_maps:
     match:
     - ip address prefix-list PL-LOOPBACKS-EVPN-OVERLAY
     set:
-    - extcommunity soo 10.99.101.1:101 additive
+    - extcommunity soo 10.99.101.11:101 additive
 - name: RM-EVPN-SOO-IN
   sequence_numbers:
   - sequence: 10
@@ -141,7 +158,7 @@ route_maps:
   - sequence: 10
     type: permit
     set:
-    - extcommunity soo 10.99.101.1:101 additive
+    - extcommunity soo 10.99.101.11:101 additive
 - name: RM-EVPN-EXPORT-VRF-DEFAULT
   sequence_numbers:
   - sequence: 10
@@ -157,11 +174,11 @@ ip_extcommunity_lists:
 - name: ECL-EVPN-SOO
   entries:
   - type: permit
-    extcommunities: soo 10.99.101.1:101
+    extcommunities: soo 10.99.101.11:101
 ip_security:
   ike_policies:
   - name: CP-IKE-POLICY
-    local_id: 10.99.102.1
+    local_id: 10.99.102.11
   sa_policies:
   - name: DP-SA-POLICY
     esp:
@@ -193,18 +210,8 @@ ip_security:
     mode: transport
   key_controller:
     profile: DP-PROFILE
-management_security:
-  ssl_profiles:
-  - name: STUN-DTLS
-    certificate:
-      file: STUN-DTLS.crt
-      key: STUN-DTLS.key
-    trust_certificate:
-      certificates:
-      - aristaDeviceCertProvisionerDefaultRootCA.crt
-    tls_versions: '1.2'
 router_adaptive_virtual_topology:
-  topology_role: transit zone
+  topology_role: transit region
   region:
     name: REGION1
     id: 1
@@ -258,15 +265,61 @@ router_path_selection:
     id: 1001
     local_interfaces:
     - name: Ethernet4
+      stun:
+        server_profiles:
+        - mpls_path-RR1-Ethernet2
+        - mpls_path-RR2-Ethernet2
+        - mpls_path-RR3-Ethernet2
+        - mpls_path-RR4-Ethernet2
     dynamic_peers:
       enabled: true
+    static_peers:
+    - router_ip: 10.99.102.1
+      name: RR1
+      ipv4_addresses:
+      - 192.15.71.2
+    - router_ip: 10.99.102.2
+      name: RR2
+      ipv4_addresses:
+      - 192.15.72.2
+    - router_ip: 10.99.102.3
+      name: RR3
+      ipv4_addresses:
+      - 192.25.76.2
+    - router_ip: 10.99.102.4
+      name: RR4
+      ipv4_addresses:
+      - 192.25.77.2
     ipsec_profile: CP-PROFILE
   - name: internet_path
     id: 1002
     local_interfaces:
     - name: Ethernet5
+      stun:
+        server_profiles:
+        - internet_path-RR1-Ethernet3
+        - internet_path-RR2-Ethernet3
+        - internet_path-RR3-Ethernet3
+        - internet_path-RR4-Ethernet3
     dynamic_peers:
       enabled: true
+    static_peers:
+    - router_ip: 10.99.102.1
+      name: RR1
+      ipv4_addresses:
+      - 192.16.71.2
+    - router_ip: 10.99.102.2
+      name: RR2
+      ipv4_addresses:
+      - 192.16.72.2
+    - router_ip: 10.99.102.3
+      name: RR3
+      ipv4_addresses:
+      - 192.26.76.2
+    - router_ip: 10.99.102.4
+      name: RR4
+      ipv4_addresses:
+      - 192.26.77.2
     ipsec_profile: CP-PROFILE
   load_balance_policies:
   - name: LB-DEFAULT-AVT-POLICY-DEFAULT
@@ -283,6 +336,25 @@ router_path_selection:
     - name: mpls_path
 router_traffic_engineering:
   enabled: true
+stun:
+  client:
+    server_profiles:
+    - name: mpls_path-RR1-Ethernet2
+      ip_address: 192.15.71.2
+    - name: mpls_path-RR2-Ethernet2
+      ip_address: 192.15.72.2
+    - name: mpls_path-RR3-Ethernet2
+      ip_address: 192.25.76.2
+    - name: mpls_path-RR4-Ethernet2
+      ip_address: 192.25.77.2
+    - name: internet_path-RR1-Ethernet3
+      ip_address: 192.16.71.2
+    - name: internet_path-RR2-Ethernet3
+      ip_address: 192.16.72.2
+    - name: internet_path-RR3-Ethernet3
+      ip_address: 192.26.76.2
+    - name: internet_path-RR4-Ethernet3
+      ip_address: 192.26.77.2
 application_traffic_recognition:
   application_profiles:
   - name: APP-PROFILE-CONTROL-PLANE
@@ -295,11 +367,16 @@ application_traffic_recognition:
   field_sets:
     ipv4_prefixes:
     - name: PFX-PATHFINDERS
+      prefix_values:
+      - 10.99.102.1/32
+      - 10.99.102.2/32
+      - 10.99.102.3/32
+      - 10.99.102.4/32
 dps_interfaces:
 - name: Dps1
   description: DPS Interface
   mtu: 9214
-  ip_address: 10.99.102.1/32
+  ip_address: 10.99.102.11/32
   flow_tracker:
     hardware: FLOW-TRACKER
 vxlan_interface:
@@ -331,7 +408,7 @@ metadata:
   cv_tags:
     device_tags:
     - name: Role
-      value: transit zone
+      value: transit region
     - name: Region
       value: REGION1
     - name: Zone
@@ -352,9 +429,8 @@ metadata:
       - name: Carrier
         value: internet
   cv_pathfinder:
-    role: transit zone
-    ssl_profile: STUN-DTLS
-    vtep_ip: 10.99.102.1
+    role: transit region
+    vtep_ip: 10.99.102.11
     region: REGION1
     zone: REGION1-ZONE
     site: SITE11
@@ -365,3 +441,8 @@ metadata:
     - name: Ethernet5
       carrier: internet
       pathgroup: internet_path
+    pathfinders:
+    - vtep_ip: 10.99.102.1
+    - vtep_ip: 10.99.102.2
+    - vtep_ip: 10.99.102.3
+    - vtep_ip: 10.99.102.4

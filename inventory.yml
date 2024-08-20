@@ -2,14 +2,22 @@
 all:
   hosts: 
     cvaas: 
-      ansible_host: 192.168.0.5
-      ansible_user: arista
-      ansible_password: aristajqzo
+      ansible_host: www.arista.io
+      ansible_user: cvaas
       ansible_connection: httpapi
       ansible_httpapi_use_ssl: True
       ansible_httpapi_validate_certs: False
       ansible_network_os: eos
       ansible_httpapi_port: 443
+    # cvaas: 
+    #   ansible_host: 192.168.0.5
+    #   ansible_user: arista
+    #   ansible_password: aristajqzo
+    #   ansible_connection: httpapi
+    #   ansible_httpapi_use_ssl: True
+    #   ansible_httpapi_validate_certs: False
+    #   ansible_network_os: eos
+    #   ansible_httpapi_port: 443
   children:
     PF_NETWORK:
       children:
@@ -17,8 +25,8 @@ all:
           hosts:
             RR1:
             RR2:
-            # RR3:
-            # RR4:
+            RR3:
+            RR4:
         REGIONS:
           children:
             REGION1:
@@ -37,3 +45,19 @@ all:
                 SITE14:
                   hosts:
                     Edge14:
+            REGION2:
+              vars:
+                type: wan_router
+              children:
+                SITE21:
+                  hosts:
+                    Edge20:
+                SITE22:
+                  hosts: 
+                    Edge22:
+                SITE23:
+                  hosts:
+                    Edge23:
+                SITE24:
+                  hosts:
+                    Edge24:

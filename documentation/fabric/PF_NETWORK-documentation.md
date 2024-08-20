@@ -21,8 +21,14 @@
 | PF_NETWORK | wan_router | Edge12 | - | - | Provisioned | - |
 | PF_NETWORK | wan_router | Edge13 | - | - | Provisioned | - |
 | PF_NETWORK | wan_router | Edge14 | - | - | Provisioned | - |
+| PF_NETWORK | wan_router | Edge20 | - | - | Provisioned | - |
+| PF_NETWORK | wan_router | Edge22 | - | - | Provisioned | - |
+| PF_NETWORK | wan_router | Edge23 | - | - | Provisioned | - |
+| PF_NETWORK | wan_router | Edge24 | - | - | Provisioned | - |
 | PF_NETWORK | wan_rr | RR1 | - | - | Provisioned | - |
 | PF_NETWORK | wan_rr | RR2 | - | - | Provisioned | - |
+| PF_NETWORK | wan_rr | RR3 | - | - | Provisioned | - |
+| PF_NETWORK | wan_rr | RR4 | - | - | Provisioned | - |
 
 > Provision status is based on Ansible inventory declaration and do not represent real status from CloudVision.
 
@@ -52,26 +58,32 @@
 
 | Loopback Pool | Available Addresses | Assigned addresses | Assigned Address % |
 | ------------- | ------------------- | ------------------ | ------------------ |
-| 10.99.99.0/24 | 256 | 2 | 0.79 % |
-| 10.99.101.0/24 | 256 | 4 | 1.57 % |
+| 10.99.101.0/24 | 256 | 8 | 3.13 % |
+| 10.99.201.0/24 | 256 | 4 | 1.57 % |
 
 ### Loopback0 Interfaces Node Allocation
 
 | POD | Node | Loopback0 |
 | --- | ---- | --------- |
-| PF_NETWORK | Edge10 | 10.99.101.1/32 |
-| PF_NETWORK | Edge12 | 10.99.101.2/32 |
-| PF_NETWORK | Edge13 | 10.99.101.3/32 |
-| PF_NETWORK | Edge14 | 10.99.101.4/32 |
-| PF_NETWORK | RR1 | 10.99.99.11/32 |
-| PF_NETWORK | RR2 | 10.99.99.12/32 |
+| PF_NETWORK | Edge10 | 10.99.101.11/32 |
+| PF_NETWORK | Edge12 | 10.99.101.12/32 |
+| PF_NETWORK | Edge13 | 10.99.101.13/32 |
+| PF_NETWORK | Edge14 | 10.99.101.14/32 |
+| PF_NETWORK | Edge20 | 10.99.201.21/32 |
+| PF_NETWORK | Edge22 | 10.99.201.22/32 |
+| PF_NETWORK | Edge23 | 10.99.201.23/32 |
+| PF_NETWORK | Edge24 | 10.99.201.24/32 |
+| PF_NETWORK | RR1 | 10.99.101.1/32 |
+| PF_NETWORK | RR2 | 10.99.101.2/32 |
+| PF_NETWORK | RR3 | 10.99.101.3/32 |
+| PF_NETWORK | RR4 | 10.99.101.4/32 |
 
 ### VTEP Loopback VXLAN Tunnel Source Interfaces (VTEPs Only)
 
 | VTEP Loopback Pool | Available Addresses | Assigned addresses | Assigned Address % |
 | --------------------- | ------------------- | ------------------ | ------------------ |
-| 10.99.98.0/24 | 256 | 0 | 0.0 % |
 | 10.99.102.0/24 | 256 | 0 | 0.0 % |
+| 10.99.202.0/24 | 256 | 0 | 0.0 % |
 
 ### VTEP Loopback Node allocation
 

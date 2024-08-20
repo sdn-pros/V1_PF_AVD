@@ -1,8 +1,8 @@
-hostname: RR1
+hostname: Edge24
 is_deployed: true
 router_bgp:
   as: '65000'
-  router_id: 10.99.101.1
+  router_id: 10.99.201.24
   bgp:
     default:
       ipv4_unicast: false
@@ -11,20 +11,6 @@ router_bgp:
   redistribute_routes:
   - source_protocol: connected
     route_map: RM-CONN-2-BGP
-  bgp_cluster_id: 10.99.101.1
-  listen_ranges:
-  - prefix: 10.99.101.0/24
-    peer_group: WAN-OVERLAY-PEERS
-    remote_as: '65000'
-  - prefix: 10.99.102.0/24
-    peer_group: WAN-OVERLAY-PEERS
-    remote_as: '65000'
-  - prefix: 10.99.201.0/24
-    peer_group: WAN-OVERLAY-PEERS
-    remote_as: '65000'
-  - prefix: 10.99.202.0/24
-    peer_group: WAN-OVERLAY-PEERS
-    remote_as: '65000'
   peer_groups:
   - name: WAN-OVERLAY-PEERS
     type: wan
@@ -34,61 +20,34 @@ router_bgp:
     maximum_routes: 0
     remote_as: '65000'
     ttl_maximum_hops: 1
-    route_reflector_client: true
     bfd_timers:
       interval: 1000
       min_rx: 1000
       multiplier: 10
-  - name: WAN-RR-OVERLAY-PEERS
-    type: wan
-    update_source: Dps1
-    bfd: true
-    send_community: all
-    maximum_routes: 0
-    remote_as: '65000'
-    ttl_maximum_hops: 1
-    bfd_timers:
-      interval: 1000
-      min_rx: 1000
-      multiplier: 10
-    route_reflector_client: true
   address_family_evpn:
     peer_groups:
     - name: WAN-OVERLAY-PEERS
       activate: true
-    - name: WAN-RR-OVERLAY-PEERS
-      activate: true
-    next_hop:
-      resolution_disabled: true
+      route_map_in: RM-EVPN-SOO-IN
+      route_map_out: RM-EVPN-SOO-OUT
   address_family_ipv4:
     peer_groups:
     - name: WAN-OVERLAY-PEERS
-      activate: false
-    - name: WAN-RR-OVERLAY-PEERS
       activate: false
   address_family_ipv4_sr_te:
     peer_groups:
     - name: WAN-OVERLAY-PEERS
       activate: true
-    - name: WAN-RR-OVERLAY-PEERS
-      activate: true
   address_family_link_state:
     peer_groups:
     - name: WAN-OVERLAY-PEERS
       activate: true
-      missing_policy:
-        direction_out_action: deny
-    - name: WAN-RR-OVERLAY-PEERS
-      activate: true
     path_selection:
       roles:
-        consumer: true
-        propagator: true
+        producer: true
   address_family_path_selection:
     peer_groups:
     - name: WAN-OVERLAY-PEERS
-      activate: true
-    - name: WAN-RR-OVERLAY-PEERS
       activate: true
     bgp:
       additional_paths:
@@ -96,21 +55,25 @@ router_bgp:
         send:
           any: true
   neighbors:
+  - ip_address: 10.99.102.1
+    peer_group: WAN-OVERLAY-PEERS
+    peer: RR1
+    description: RR1
   - ip_address: 10.99.102.2
-    peer_group: WAN-RR-OVERLAY-PEERS
+    peer_group: WAN-OVERLAY-PEERS
     peer: RR2
     description: RR2
   - ip_address: 10.99.102.3
-    peer_group: WAN-RR-OVERLAY-PEERS
+    peer_group: WAN-OVERLAY-PEERS
     peer: RR3
     description: RR3
   - ip_address: 10.99.102.4
-    peer_group: WAN-RR-OVERLAY-PEERS
+    peer_group: WAN-OVERLAY-PEERS
     peer: RR4
     description: RR4
   vrfs:
   - name: default
-    rd: 10.99.101.1:101
+    rd: 10.99.201.24:101
     route_targets:
       import:
       - address_family: evpn
@@ -122,8 +85,8 @@ router_bgp:
         - 65000:101
         - route-map RM-EVPN-EXPORT-VRF-DEFAULT
   - name: VRF_A
-    router_id: 10.99.101.1
-    rd: 10.99.101.1:102
+    router_id: 10.99.201.24
+    rd: 10.99.201.24:102
     route_targets:
       import:
       - address_family: evpn
@@ -146,9 +109,6 @@ vrfs:
 - name: VRF_A
   tenant: TENANT_A
   ip_routing: true
-platform:
-  sfe:
-    data_plane_cpu_allocation_max: 1
 management_api_http:
   enable_vrfs:
   - name: MGMT
@@ -156,13 +116,13 @@ management_api_http:
 ethernet_interfaces:
 - name: Ethernet2
   peer_type: l3_interface
-  ip_address: 192.15.71.2/24
+  ip_address: 192.24.25.1/24
   shutdown: false
   type: routed
   description: mpls
 - name: Ethernet3
   peer_type: l3_interface
-  ip_address: 192.16.71.2/24
+  ip_address: 192.24.26.1/24
   shutdown: false
   type: routed
   description: internet
@@ -170,12 +130,12 @@ loopback_interfaces:
 - name: Loopback0
   description: Router_ID
   shutdown: false
-  ip_address: 10.99.101.1/32
+  ip_address: 10.99.201.24/32
 prefix_lists:
 - name: PL-LOOPBACKS-EVPN-OVERLAY
   sequence_numbers:
   - sequence: 10
-    action: permit 10.99.101.0/24 eq 32
+    action: permit 10.99.201.0/24 eq 32
 route_maps:
 - name: RM-CONN-2-BGP
   sequence_numbers:
@@ -184,7 +144,21 @@ route_maps:
     match:
     - ip address prefix-list PL-LOOPBACKS-EVPN-OVERLAY
     set:
-    - extcommunity soo 10.99.101.1:0 additive
+    - extcommunity soo 10.99.201.24:204 additive
+- name: RM-EVPN-SOO-IN
+  sequence_numbers:
+  - sequence: 10
+    type: deny
+    match:
+    - extcommunity ECL-EVPN-SOO
+  - sequence: 20
+    type: permit
+- name: RM-EVPN-SOO-OUT
+  sequence_numbers:
+  - sequence: 10
+    type: permit
+    set:
+    - extcommunity soo 10.99.201.24:204 additive
 - name: RM-EVPN-EXPORT-VRF-DEFAULT
   sequence_numbers:
   - sequence: 10
@@ -200,17 +174,30 @@ ip_extcommunity_lists:
 - name: ECL-EVPN-SOO
   entries:
   - type: permit
-    extcommunities: soo 10.99.101.1:0
+    extcommunities: soo 10.99.201.24:204
 ip_security:
   ike_policies:
   - name: CP-IKE-POLICY
-    local_id: 10.99.102.1
+    local_id: 10.99.202.24
   sa_policies:
+  - name: DP-SA-POLICY
+    esp:
+      encryption: aes256gcm128
+    pfs_dh_group: 14
   - name: CP-SA-POLICY
     esp:
       encryption: aes256gcm128
     pfs_dh_group: 14
   profiles:
+  - name: DP-PROFILE
+    sa_policy: DP-SA-POLICY
+    connection: start
+    shared_key: 0110100A480E0A0E231D1E
+    dpd:
+      interval: 10
+      time: 50
+      action: clear
+    mode: transport
   - name: CP-PROFILE
     ike_policy: CP-IKE-POLICY
     sa_policy: CP-SA-POLICY
@@ -221,8 +208,19 @@ ip_security:
       time: 50
       action: clear
     mode: transport
+  key_controller:
+    profile: DP-PROFILE
 router_adaptive_virtual_topology:
-  topology_role: pathfinder
+  topology_role: transit region
+  region:
+    name: REGION2
+    id: 2
+  zone:
+    name: REGION2-ZONE
+    id: 1
+  site:
+    name: SITE24
+    id: 204
   profiles:
   - name: DEFAULT-AVT-POLICY-DEFAULT
     load_balance_policy: LB-DEFAULT-AVT-POLICY-DEFAULT
@@ -267,7 +265,19 @@ router_path_selection:
     id: 1001
     local_interfaces:
     - name: Ethernet2
+      stun:
+        server_profiles:
+        - mpls_path-RR1-Ethernet2
+        - mpls_path-RR2-Ethernet2
+        - mpls_path-RR3-Ethernet2
+        - mpls_path-RR4-Ethernet2
+    dynamic_peers:
+      enabled: true
     static_peers:
+    - router_ip: 10.99.102.1
+      name: RR1
+      ipv4_addresses:
+      - 192.15.71.2
     - router_ip: 10.99.102.2
       name: RR2
       ipv4_addresses:
@@ -285,7 +295,19 @@ router_path_selection:
     id: 1002
     local_interfaces:
     - name: Ethernet3
+      stun:
+        server_profiles:
+        - internet_path-RR1-Ethernet3
+        - internet_path-RR2-Ethernet3
+        - internet_path-RR3-Ethernet3
+        - internet_path-RR4-Ethernet3
+    dynamic_peers:
+      enabled: true
     static_peers:
+    - router_ip: 10.99.102.1
+      name: RR1
+      ipv4_addresses:
+      - 192.16.71.2
     - router_ip: 10.99.102.2
       name: RR2
       ipv4_addresses:
@@ -299,33 +321,40 @@ router_path_selection:
       ipv4_addresses:
       - 192.26.77.2
     ipsec_profile: CP-PROFILE
-  - name: LAN_HA
-    id: 65535
-    flow_assignment: lan
-  peer_dynamic_source: stun
   load_balance_policies:
   - name: LB-DEFAULT-AVT-POLICY-DEFAULT
     path_groups:
     - name: mpls_path
     - name: internet_path
-    - name: LAN_HA
   - name: LB-DEFAULT-POLICY-CONTROL-PLANE
     path_groups:
     - name: internet_path
     - name: mpls_path
-    - name: LAN_HA
   - name: LB-DEFAULT-POLICY-DEFAULT
     path_groups:
     - name: internet_path
     - name: mpls_path
-    - name: LAN_HA
 router_traffic_engineering:
   enabled: true
 stun:
-  server:
-    local_interfaces:
-    - Ethernet2
-    - Ethernet3
+  client:
+    server_profiles:
+    - name: mpls_path-RR1-Ethernet2
+      ip_address: 192.15.71.2
+    - name: mpls_path-RR2-Ethernet2
+      ip_address: 192.15.72.2
+    - name: mpls_path-RR3-Ethernet2
+      ip_address: 192.25.76.2
+    - name: mpls_path-RR4-Ethernet2
+      ip_address: 192.25.77.2
+    - name: internet_path-RR1-Ethernet3
+      ip_address: 192.16.71.2
+    - name: internet_path-RR2-Ethernet3
+      ip_address: 192.16.72.2
+    - name: internet_path-RR3-Ethernet3
+      ip_address: 192.26.76.2
+    - name: internet_path-RR4-Ethernet3
+      ip_address: 192.26.77.2
 application_traffic_recognition:
   application_profiles:
   - name: APP-PROFILE-CONTROL-PLANE
@@ -334,22 +363,25 @@ application_traffic_recognition:
   applications:
     ipv4_applications:
     - name: APP-CONTROL-PLANE
-      src_prefix_set_name: PFX-LOCAL-VTEP-IP
+      dest_prefix_set_name: PFX-PATHFINDERS
   field_sets:
     ipv4_prefixes:
-    - name: PFX-LOCAL-VTEP-IP
+    - name: PFX-PATHFINDERS
       prefix_values:
       - 10.99.102.1/32
+      - 10.99.102.2/32
+      - 10.99.102.3/32
+      - 10.99.102.4/32
 dps_interfaces:
 - name: Dps1
   description: DPS Interface
   mtu: 9214
-  ip_address: 10.99.102.1/32
+  ip_address: 10.99.202.24/32
   flow_tracker:
     hardware: FLOW-TRACKER
 vxlan_interface:
   Vxlan1:
-    description: RR1_VTEP
+    description: Edge24_VTEP
     vxlan:
       udp_port: 4789
       source_interface: Dps1
@@ -358,118 +390,6 @@ vxlan_interface:
         vni: 1
       - name: VRF_A
         vni: 101
-metadata:
-  cv_pathfinder:
-    applications:
-      profiles:
-      - name: APP-PROFILE-CONTROL-PLANE
-        user_defined_applications:
-        - name: APP-CONTROL-PLANE
-    role: pathfinder
-    vtep_ip: 10.99.102.1
-    region: REGION1
-    interfaces:
-    - name: Ethernet2
-      carrier: mpls
-      pathgroup: mpls_path
-      public_ip: 192.15.71.2
-    - name: Ethernet3
-      carrier: internet
-      pathgroup: internet_path
-      public_ip: 192.16.71.2
-    pathgroups:
-    - name: mpls_path
-      carriers:
-      - name: mpls
-    - name: internet_path
-      carriers:
-      - name: internet
-    regions:
-    - name: REGION1
-      id: 1
-      zones:
-      - name: REGION1-ZONE
-        id: 1
-        sites:
-        - name: SITE11
-          id: 101
-        - name: SITE12
-          id: 102
-        - name: SITE13
-          id: 103
-        - name: SITE14
-          id: 104
-    - name: REGION2
-      id: 2
-      zones:
-      - name: REGION2-ZONE
-        id: 1
-        sites:
-        - name: SITE21
-          id: 201
-        - name: SITE22
-          id: 202
-        - name: SITE23
-          id: 203
-        - name: SITE24
-          id: 204
-    vrfs:
-    - name: VRF_A
-      vni: 101
-      avts:
-      - id: 1
-        name: DEFAULT-AVT-POLICY-DEFAULT
-        pathgroups:
-        - name: mpls_path
-          preference: preferred
-        - name: internet_path
-          preference: preferred
-        - name: LAN_HA
-          preference: preferred
-    - name: default
-      vni: 1
-      avts:
-      - id: 254
-        name: DEFAULT-POLICY-CONTROL-PLANE
-        pathgroups:
-        - name: internet_path
-          preference: preferred
-        - name: mpls_path
-          preference: preferred
-        - name: LAN_HA
-          preference: preferred
-        application_profiles:
-        - APP-PROFILE-CONTROL-PLANE
-      - id: 1
-        name: DEFAULT-POLICY-DEFAULT
-        pathgroups:
-        - name: internet_path
-          preference: preferred
-        - name: mpls_path
-          preference: preferred
-        - name: LAN_HA
-          preference: preferred
-  cv_tags:
-    device_tags:
-    - name: Role
-      value: pathfinder
-    - name: Region
-      value: REGION1
-    - name: PathfinderSet
-      value: PATHFINDERS
-    interface_tags:
-    - interface: Ethernet2
-      tags:
-      - name: Type
-        value: wan
-      - name: Carrier
-        value: mpls
-    - interface: Ethernet3
-      tags:
-      - name: Type
-        value: wan
-      - name: Carrier
-        value: internet
 flow_tracking:
   hardware:
     trackers:
@@ -484,3 +404,45 @@ flow_tracking:
         local_interface: Loopback0
         template_interval: 3600000
     shutdown: false
+metadata:
+  cv_tags:
+    device_tags:
+    - name: Role
+      value: transit region
+    - name: Region
+      value: REGION2
+    - name: Zone
+      value: REGION2-ZONE
+    - name: Site
+      value: SITE24
+    interface_tags:
+    - interface: Ethernet2
+      tags:
+      - name: Type
+        value: wan
+      - name: Carrier
+        value: mpls
+    - interface: Ethernet3
+      tags:
+      - name: Type
+        value: wan
+      - name: Carrier
+        value: internet
+  cv_pathfinder:
+    role: transit region
+    vtep_ip: 10.99.202.24
+    region: REGION2
+    zone: REGION2-ZONE
+    site: SITE24
+    interfaces:
+    - name: Ethernet2
+      carrier: mpls
+      pathgroup: mpls_path
+    - name: Ethernet3
+      carrier: internet
+      pathgroup: internet_path
+    pathfinders:
+    - vtep_ip: 10.99.102.1
+    - vtep_ip: 10.99.102.2
+    - vtep_ip: 10.99.102.3
+    - vtep_ip: 10.99.102.4
