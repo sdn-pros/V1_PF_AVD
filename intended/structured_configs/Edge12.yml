@@ -210,6 +210,16 @@ ip_security:
     mode: transport
   key_controller:
     profile: DP-PROFILE
+management_security:
+  ssl_profiles:
+  - name: STUN-DTLS
+    certificate:
+      file: STUN-DTLS.crt
+      key: STUN-DTLS.key
+    trust_certificate:
+      certificates:
+      - aristaDeviceCertProvisionerDefaultRootCA.crt
+    tls_versions: '1.2'
 router_adaptive_virtual_topology:
   topology_role: transit region
   region:
@@ -341,20 +351,28 @@ stun:
     server_profiles:
     - name: mpls_path-RR1-Ethernet2
       ip_address: 192.15.71.2
+      ssl_profile: STUN-DTLS
     - name: mpls_path-RR2-Ethernet2
       ip_address: 192.15.72.2
+      ssl_profile: STUN-DTLS
     - name: mpls_path-RR3-Ethernet2
       ip_address: 192.25.76.2
+      ssl_profile: STUN-DTLS
     - name: mpls_path-RR4-Ethernet2
       ip_address: 192.25.77.2
+      ssl_profile: STUN-DTLS
     - name: internet_path-RR1-Ethernet3
       ip_address: 192.16.71.2
+      ssl_profile: STUN-DTLS
     - name: internet_path-RR2-Ethernet3
       ip_address: 192.16.72.2
+      ssl_profile: STUN-DTLS
     - name: internet_path-RR3-Ethernet3
       ip_address: 192.26.76.2
+      ssl_profile: STUN-DTLS
     - name: internet_path-RR4-Ethernet3
       ip_address: 192.26.77.2
+      ssl_profile: STUN-DTLS
 application_traffic_recognition:
   application_profiles:
   - name: APP-PROFILE-CONTROL-PLANE
@@ -430,6 +448,7 @@ metadata:
         value: internet
   cv_pathfinder:
     role: transit region
+    ssl_profile: STUN-DTLS
     vtep_ip: 10.99.102.12
     region: REGION1
     zone: REGION1-ZONE

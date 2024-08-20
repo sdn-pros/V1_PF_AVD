@@ -6,7 +6,6 @@ wan_rr:
     data_plane_cpu_allocation_max: 1
     loopback_ipv4_pool: 10.99.101.0/24
     vtep_loopback_ipv4_pool: 10.99.102.0/24
-    cv_pathfinder_region: REGION1
     filter:
       always_include_vrfs_in_tenants: [TENANT_A]
   nodes:
@@ -30,7 +29,6 @@ wan_rr:
           wan_carrier: internet
     - name: RR3
       id: 3
-      cv_pathfinder_region: REGION2
       l3_interfaces:
         - name: Ethernet2
           ip_address: 192.25.76.2/24
@@ -40,7 +38,6 @@ wan_rr:
           wan_carrier: internet
     - name: RR4
       id: 4
-      cv_pathfinder_region: REGION2
       l3_interfaces:
         - name: Ethernet2
           ip_address: 192.25.77.2/24

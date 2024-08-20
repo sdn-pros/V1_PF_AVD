@@ -5,6 +5,11 @@
 - [Management](#management)
   - [Agents](#agents)
   - [Management API HTTP](#management-api-http)
+- [Management Security](#management-security)
+  - [Management Security Summary](#management-security-summary)
+  - [Management Security SSL Profiles](#management-security-ssl-profiles)
+  - [SSL profile STUN-DTLS Certificates Summary](#ssl-profile-stun-dtls-certificates-summary)
+  - [Management Security Device Configuration](#management-security-device-configuration)
 - [Monitoring](#monitoring)
   - [Flow Tracking](#flow-tracking)
 - [Spanning Tree](#spanning-tree)
@@ -92,6 +97,36 @@ management api http-commands
    !
    vrf MGMT
       no shutdown
+```
+
+## Management Security
+
+### Management Security Summary
+
+| Settings | Value |
+| -------- | ----- |
+
+### Management Security SSL Profiles
+
+| SSL Profile Name | TLS protocol accepted | Certificate filename | Key filename | Cipher List | CRLs |
+| ---------------- | --------------------- | -------------------- | ------------ | ----------- | ---- |
+| STUN-DTLS | 1.2 | STUN-DTLS.crt | STUN-DTLS.key | - | - |
+
+### SSL profile STUN-DTLS Certificates Summary
+
+| Trust Certificates | Requirement | Policy | System |
+| ------------------ | ----------- | ------ | ------ |
+| aristaDeviceCertProvisionerDefaultRootCA.crt | - | - | - |
+
+### Management Security Device Configuration
+
+```eos
+!
+management security
+   ssl profile STUN-DTLS
+      tls versions 1.2
+      trust certificate aristaDeviceCertProvisionerDefaultRootCA.crt
+      certificate STUN-DTLS.crt key STUN-DTLS.key
 ```
 
 ## Monitoring
@@ -927,7 +962,7 @@ router path-selection
 
 | Server Local Interfaces | Bindings Timeout (s) | SSL Profile | SSL Connection Lifetime | Port |
 | ----------------------- | -------------------- | ----------- | ----------------------- | ---- |
-| Ethernet2<br>Ethernet3 | - | - | - | 3478 |
+| Ethernet2<br>Ethernet3 | - | STUN-DTLS | - | 3478 |
 
 ### STUN Device Configuration
 
@@ -937,4 +972,5 @@ stun
    server
       local-interface Ethernet2
       local-interface Ethernet3
+      ssl profile STUN-DTLS
 ```

@@ -5,6 +5,11 @@
 - [Management](#management)
   - [Agents](#agents)
   - [Management API HTTP](#management-api-http)
+- [Management Security](#management-security)
+  - [Management Security Summary](#management-security-summary)
+  - [Management Security SSL Profiles](#management-security-ssl-profiles)
+  - [SSL profile STUN-DTLS Certificates Summary](#ssl-profile-stun-dtls-certificates-summary)
+  - [Management Security Device Configuration](#management-security-device-configuration)
 - [Monitoring](#monitoring)
   - [Flow Tracking](#flow-tracking)
 - [Spanning Tree](#spanning-tree)
@@ -90,6 +95,36 @@ management api http-commands
    !
    vrf MGMT
       no shutdown
+```
+
+## Management Security
+
+### Management Security Summary
+
+| Settings | Value |
+| -------- | ----- |
+
+### Management Security SSL Profiles
+
+| SSL Profile Name | TLS protocol accepted | Certificate filename | Key filename | Cipher List | CRLs |
+| ---------------- | --------------------- | -------------------- | ------------ | ----------- | ---- |
+| STUN-DTLS | 1.2 | STUN-DTLS.crt | STUN-DTLS.key | - | - |
+
+### SSL profile STUN-DTLS Certificates Summary
+
+| Trust Certificates | Requirement | Policy | System |
+| ------------------ | ----------- | ------ | ------ |
+| aristaDeviceCertProvisionerDefaultRootCA.crt | - | - | - |
+
+### Management Security Device Configuration
+
+```eos
+!
+management security
+   ssl profile STUN-DTLS
+      tls versions 1.2
+      trust certificate aristaDeviceCertProvisionerDefaultRootCA.crt
+      certificate STUN-DTLS.crt key STUN-DTLS.key
 ```
 
 ## Monitoring
@@ -921,14 +956,14 @@ router path-selection
 
 | Server Profile | IP address | SSL Profile | Port |
 | -------------- | ---------- | ----------- | ---- |
-| internet_path-RR1-Ethernet3 | 192.16.71.2 | - | 3478 |
-| internet_path-RR2-Ethernet3 | 192.16.72.2 | - | 3478 |
-| internet_path-RR3-Ethernet3 | 192.26.76.2 | - | 3478 |
-| internet_path-RR4-Ethernet3 | 192.26.77.2 | - | 3478 |
-| mpls_path-RR1-Ethernet2 | 192.15.71.2 | - | 3478 |
-| mpls_path-RR2-Ethernet2 | 192.15.72.2 | - | 3478 |
-| mpls_path-RR3-Ethernet2 | 192.25.76.2 | - | 3478 |
-| mpls_path-RR4-Ethernet2 | 192.25.77.2 | - | 3478 |
+| internet_path-RR1-Ethernet3 | 192.16.71.2 | STUN-DTLS | 3478 |
+| internet_path-RR2-Ethernet3 | 192.16.72.2 | STUN-DTLS | 3478 |
+| internet_path-RR3-Ethernet3 | 192.26.76.2 | STUN-DTLS | 3478 |
+| internet_path-RR4-Ethernet3 | 192.26.77.2 | STUN-DTLS | 3478 |
+| mpls_path-RR1-Ethernet2 | 192.15.71.2 | STUN-DTLS | 3478 |
+| mpls_path-RR2-Ethernet2 | 192.15.72.2 | STUN-DTLS | 3478 |
+| mpls_path-RR3-Ethernet2 | 192.25.76.2 | STUN-DTLS | 3478 |
+| mpls_path-RR4-Ethernet2 | 192.25.77.2 | STUN-DTLS | 3478 |
 
 ### STUN Device Configuration
 
@@ -938,18 +973,26 @@ stun
    client
       server-profile internet_path-RR1-Ethernet3
          ip address 192.16.71.2
+         ssl profile STUN-DTLS
       server-profile internet_path-RR2-Ethernet3
          ip address 192.16.72.2
+         ssl profile STUN-DTLS
       server-profile internet_path-RR3-Ethernet3
          ip address 192.26.76.2
+         ssl profile STUN-DTLS
       server-profile internet_path-RR4-Ethernet3
          ip address 192.26.77.2
+         ssl profile STUN-DTLS
       server-profile mpls_path-RR1-Ethernet2
          ip address 192.15.71.2
+         ssl profile STUN-DTLS
       server-profile mpls_path-RR2-Ethernet2
          ip address 192.15.72.2
+         ssl profile STUN-DTLS
       server-profile mpls_path-RR3-Ethernet2
          ip address 192.25.76.2
+         ssl profile STUN-DTLS
       server-profile mpls_path-RR4-Ethernet2
          ip address 192.25.77.2
+         ssl profile STUN-DTLS
 ```

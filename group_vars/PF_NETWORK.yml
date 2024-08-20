@@ -7,7 +7,7 @@ fabric_name: PF_NETWORK
 bgp_update_wait_install: false
 
 # Can also be just autovpn
-wan_stun_dtls_disable: true
+wan_stun_dtls_disable: false
 wan_mode: cv-pathfinder
 
 bgp_as: 65000

@@ -1,13 +1,44 @@
----
-- name: Apply configlets
-  hosts: cvaas
-
-  vars_files:
-    - ../vars/PF_Model.yml
+- name: Configuration deployment to CVaaS
+  hosts: PF_NETWORK # <-- Targeted devices
+  connection: local
+  gather_facts: false
   tasks:
-    - name: Upload configlets
-      arista.cvp.cv_configlet_v3:
-        configlets: "{{ pf_configlets }}"
-    - name: Apply configlets
-      arista.cvp.cv_device_v3:
-        devices: "{{ pf_devices }}"
+    - name: Deploy configurations and tags to CloudVision
+      ansible.builtin.import_role:
+        name: arista.avd.cv_deploy
+      vars:
+        cv_server: www.arista.io
+        cv_token: "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJkaWQiOjcwODkzNDMxODEzNjM3MTIzMzksImRzbiI6ImFuc2libGUiLCJkc3QiOiJhY2NvdW50IiwiZXhwIjoxNzU0MTU1MDgxLCJpYXQiOjE3MjQwODc4ODQsIm9naSI6NzA4OTM0MzE4MTM2MzcwMTUyNCwib2duIjoiYXJpc3RhLXRuZy0wMiIsInNpZCI6ImJlM2RjZTM4OTE0YTA3ZTg4Nzc3N2E2YjQyYmE5ZmY5ODEzYmIwMDc5MDQ5YmIzYTIzZTM0YmY3NGU4YjIxNDMtQldCVGxIc201SWVjaVVSV2w5Y050aFlPMHN5NjRxNkYtWHFYT2tUMyJ9.QkiK5uNpWLak592rpfxygLBkrAZwbfcoSrKF56FR_dhi3BukJ88-zl13E0PMcIGqbgb5AH-cphx-p3ENQr_rgQ"
+        cv_run_change_control: true
+# - name: Deploy config
+#   hosts: PF_NETWORK
+#   tasks:
+#     - name: Deploy to CVaaS
+#       run_once: true
+#       delegate_to: localhost
+#       arista.avd.cv_workflow:
+#         cv_servers: ["www.arista.io"]
+#         cv_token: "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJkaWQiOjcwODkzNDMxODEzNjM3MTIzMzksImRzbiI6ImFuc2libGUiLCJkc3QiOiJhY2NvdW50IiwiZXhwIjoxNzU0MTU1MDgxLCJpYXQiOjE3MjQwODc4ODQsIm9naSI6NzA4OTM0MzE4MTM2MzcwMTUyNCwib2duIjoiYXJpc3RhLXRuZy0wMiIsInNpZCI6ImJlM2RjZTM4OTE0YTA3ZTg4Nzc3N2E2YjQyYmE5ZmY5ODEzYmIwMDc5MDQ5YmIzYTIzZTM0YmY3NGU4YjIxNDMtQldCVGxIc201SWVjaVVSV2w5Y050aFlPMHN5NjRxNkYtWHFYT2tUMyJ9.QkiK5uNpWLak592rpfxygLBkrAZwbfcoSrKF56FR_dhi3BukJ88-zl13E0PMcIGqbgb5AH-cphx-p3ENQr_rgQ"
+#         configuration_dir: "{{ inventory_dir }}/intended/configs"
+#         structured_config_dir: "{{ inventory_dir }}/intended/structured_configs"
+#         device_list: "{{ ansible_play_hosts }}"
+#         workspace:
+#           requested_state: submitted
+#         change_control:
+#           requested_state: pending approval
+#         return_details: false
+
+
+# ---
+# - name: Apply configlets
+#   hosts: cvaas
+
+#   vars_files:
+#     - ../vars/PF_Model.yml
+#   tasks:
+#     - name: Upload configlets
+#       arista.cvp.cv_configlet_v3:
+#         configlets: "{{ pf_configlets }}"
+#     - name: Apply configlets
+#       arista.cvp.cv_device_v3:
+#         devices: "{{ pf_devices }}"

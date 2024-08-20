@@ -4,7 +4,6 @@ all:
     cvaas: 
       ansible_host: www.arista.io
       ansible_user: cvaas
-      ansible_password: "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJkaWQiOjcwODkzNDMxODEzNjM3MTIzMzksImRzbiI6ImFuc2libGUiLCJkc3QiOiJhY2NvdW50IiwiZXhwIjoxNzU0MTU1MDgxLCJpYXQiOjE3MjQwODc4ODQsIm9naSI6NzA4OTM0MzE4MTM2MzcwMTUyNCwib2duIjoiYXJpc3RhLXRuZy0wMiIsInNpZCI6ImJlM2RjZTM4OTE0YTA3ZTg4Nzc3N2E2YjQyYmE5ZmY5ODEzYmIwMDc5MDQ5YmIzYTIzZTM0YmY3NGU4YjIxNDMtQldCVGxIc201SWVjaVVSV2w5Y050aFlPMHN5NjRxNkYtWHFYT2tUMyJ9.QkiK5uNpWLak592rpfxygLBkrAZwbfcoSrKF56FR_dhi3BukJ88-zl13E0PMcIGqbgb5AH-cphx-p3ENQr_rgQ"
       ansible_connection: httpapi
       ansible_httpapi_use_ssl: True
       ansible_httpapi_validate_certs: False
