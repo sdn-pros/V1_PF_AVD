@@ -26,19 +26,7 @@ cv_pathfinder_regions:
         id: 104
       - name: TRANSIT1
         id: 199
-  - name: REGION2
-    id: 2
-    sites:
-      - name: SITE21
-        id: 201
-      - name: SITE22
-        id: 202
-      - name: SITE23
-        id: 203
-      - name: SITE24
-        id: 204
-      - name: TRANSIT2
-        id: 299
+
 
 
 # You really want to use passwords here, as lots of critical info is reflected/served from these BGP servers
@@ -49,16 +37,14 @@ bgp_peer_groups:
     listen_range_prefixes:
       - 10.99.101.0/24
       - 10.99.102.0/24
-      - 10.99.201.0/24
-      - 10.99.202.0/24
+
 
 
 # Wan_route_server is Pathfinder
 wan_route_servers:
   - hostname: RR1
   - hostname: RR2
-  - hostname: RR3
-  - hostname: RR4
+
 
 wan_ipsec_profiles:
   control_plane:

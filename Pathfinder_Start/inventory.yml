@@ -49,23 +49,3 @@ all:
                   hosts:
                     P10:
                     P11:
-            REGION2:
-              children:
-                REGION2-EDGE:
-                  children:
-                    SITE21:
-                      hosts:
-                        Edge20:
-                    SITE22:
-                      hosts: 
-                        Edge22:
-                    SITE23:
-                      hosts:
-                        Edge23:
-                    SITE24:
-                      hosts:
-                        Edge24:
-                REGION2-TRANSIT:
-                  hosts:
-                    P20:
-                    P21:
