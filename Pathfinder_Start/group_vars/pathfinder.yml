@@ -30,23 +30,3 @@ wan_rr:
         - name: Ethernet3
           ip_address: 192.16.72.2/24
           wan_carrier: internet
-    - name: RR3
-      id: 3
-      cv_pathfinder_region: REGION2
-      l3_interfaces:
-        - name: Ethernet2
-          ip_address: 192.25.76.2/24
-          wan_carrier: mpls
-        - name: Ethernet3
-          ip_address: 192.26.76.2/24
-          wan_carrier: internet
-    - name: RR4
-      id: 4
-      cv_pathfinder_region: REGION2
-      l3_interfaces:
-        - name: Ethernet2
-          ip_address: 192.25.77.2/24
-          wan_carrier: mpls
-        - name: Ethernet3
-          ip_address: 192.26.77.2/24
-          wan_carrier: internet

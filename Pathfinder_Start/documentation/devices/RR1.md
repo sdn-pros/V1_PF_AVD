@@ -494,8 +494,6 @@ ASN Notation: asplain
 | ------ | ------------------------- | ---------- | ----------- | --------- | --- |
 | 10.99.101.0/24 | - | WAN-OVERLAY-PEERS | - | 65000 | default |
 | 10.99.102.0/24 | - | WAN-OVERLAY-PEERS | - | 65000 | default |
-| 10.99.201.0/24 | - | WAN-OVERLAY-PEERS | - | 65000 | default |
-| 10.99.202.0/24 | - | WAN-OVERLAY-PEERS | - | 65000 | default |
 
 #### Router BGP Peer Groups
 
@@ -532,8 +530,6 @@ ASN Notation: asplain
 | Neighbor | Remote AS | VRF | Shutdown | Send-community | Maximum-routes | Allowas-in | BFD | RIB Pre-Policy Retain | Route-Reflector Client | Passive | TTL Max Hops |
 | -------- | --------- | --- | -------- | -------------- | -------------- | ---------- | --- | --------------------- | ---------------------- | ------- | ------------ |
 | 10.99.102.2 | Inherited from peer group WAN-RR-OVERLAY-PEERS | default | - | Inherited from peer group WAN-RR-OVERLAY-PEERS | Inherited from peer group WAN-RR-OVERLAY-PEERS | - | Inherited from peer group WAN-RR-OVERLAY-PEERS(interval: 1000, min_rx: 1000, multiplier: 10) | - | Inherited from peer group WAN-RR-OVERLAY-PEERS | - | Inherited from peer group WAN-RR-OVERLAY-PEERS |
-| 10.99.102.3 | Inherited from peer group WAN-RR-OVERLAY-PEERS | default | - | Inherited from peer group WAN-RR-OVERLAY-PEERS | Inherited from peer group WAN-RR-OVERLAY-PEERS | - | Inherited from peer group WAN-RR-OVERLAY-PEERS(interval: 1000, min_rx: 1000, multiplier: 10) | - | Inherited from peer group WAN-RR-OVERLAY-PEERS | - | Inherited from peer group WAN-RR-OVERLAY-PEERS |
-| 10.99.102.4 | Inherited from peer group WAN-RR-OVERLAY-PEERS | default | - | Inherited from peer group WAN-RR-OVERLAY-PEERS | Inherited from peer group WAN-RR-OVERLAY-PEERS | - | Inherited from peer group WAN-RR-OVERLAY-PEERS(interval: 1000, min_rx: 1000, multiplier: 10) | - | Inherited from peer group WAN-RR-OVERLAY-PEERS | - | Inherited from peer group WAN-RR-OVERLAY-PEERS |
 
 #### Router BGP EVPN Address Family
 
@@ -597,8 +593,6 @@ router bgp 65000
    bgp cluster-id 10.99.101.1
    bgp listen range 10.99.101.0/24 peer-group WAN-OVERLAY-PEERS remote-as 65000
    bgp listen range 10.99.102.0/24 peer-group WAN-OVERLAY-PEERS remote-as 65000
-   bgp listen range 10.99.201.0/24 peer-group WAN-OVERLAY-PEERS remote-as 65000
-   bgp listen range 10.99.202.0/24 peer-group WAN-OVERLAY-PEERS remote-as 65000
    neighbor WAN-OVERLAY-PEERS peer group
    neighbor WAN-OVERLAY-PEERS remote-as 65000
    neighbor WAN-OVERLAY-PEERS update-source Dps1
@@ -619,10 +613,6 @@ router bgp 65000
    neighbor WAN-RR-OVERLAY-PEERS maximum-routes 0
    neighbor 10.99.102.2 peer group WAN-RR-OVERLAY-PEERS
    neighbor 10.99.102.2 description RR2
-   neighbor 10.99.102.3 peer group WAN-RR-OVERLAY-PEERS
-   neighbor 10.99.102.3 description RR3
-   neighbor 10.99.102.4 peer group WAN-RR-OVERLAY-PEERS
-   neighbor 10.99.102.4 description RR4
    redistribute connected route-map RM-CONN-2-BGP
    !
    address-family evpn
@@ -856,8 +846,6 @@ application traffic recognition
 | Router IP | Name | IPv4 address(es) |
 | --------- | ---- | ---------------- |
 | 10.99.102.2 | RR2 | 192.16.72.2 |
-| 10.99.102.3 | RR3 | 192.26.76.2 |
-| 10.99.102.4 | RR4 | 192.26.77.2 |
 
 ##### Path Group LAN_HA
 
@@ -884,8 +872,6 @@ application traffic recognition
 | Router IP | Name | IPv4 address(es) |
 | --------- | ---- | ---------------- |
 | 10.99.102.2 | RR2 | 192.15.72.2 |
-| 10.99.102.3 | RR3 | 192.25.76.2 |
-| 10.99.102.4 | RR4 | 192.25.77.2 |
 
 #### Load-balance Policies
 
@@ -911,14 +897,6 @@ router path-selection
       peer static router-ip 10.99.102.2
          name RR2
          ipv4 address 192.16.72.2
-      !
-      peer static router-ip 10.99.102.3
-         name RR3
-         ipv4 address 192.26.76.2
-      !
-      peer static router-ip 10.99.102.4
-         name RR4
-         ipv4 address 192.26.77.2
    !
    path-group LAN_HA id 65535
       flow assignment lan
@@ -931,14 +909,6 @@ router path-selection
       peer static router-ip 10.99.102.2
          name RR2
          ipv4 address 192.15.72.2
-      !
-      peer static router-ip 10.99.102.3
-         name RR3
-         ipv4 address 192.25.76.2
-      !
-      peer static router-ip 10.99.102.4
-         name RR4
-         ipv4 address 192.25.77.2
    !
    load-balance policy LB-DEFAULT-AVT-POLICY-DEFAULT
       path-group internet_path

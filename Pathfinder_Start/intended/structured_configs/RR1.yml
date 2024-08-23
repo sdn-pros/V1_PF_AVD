@@ -19,12 +19,6 @@ router_bgp:
   - prefix: 10.99.102.0/24
     peer_group: WAN-OVERLAY-PEERS
     remote_as: '65000'
-  - prefix: 10.99.201.0/24
-    peer_group: WAN-OVERLAY-PEERS
-    remote_as: '65000'
-  - prefix: 10.99.202.0/24
-    peer_group: WAN-OVERLAY-PEERS
-    remote_as: '65000'
   peer_groups:
   - name: WAN-OVERLAY-PEERS
     type: wan
@@ -100,14 +94,6 @@ router_bgp:
     peer_group: WAN-RR-OVERLAY-PEERS
     peer: RR2
     description: RR2
-  - ip_address: 10.99.102.3
-    peer_group: WAN-RR-OVERLAY-PEERS
-    peer: RR3
-    description: RR3
-  - ip_address: 10.99.102.4
-    peer_group: WAN-RR-OVERLAY-PEERS
-    peer: RR4
-    description: RR4
   vrfs:
   - name: default
     rd: 10.99.101.1:101
@@ -282,14 +268,6 @@ router_path_selection:
       name: RR2
       ipv4_addresses:
       - 192.15.72.2
-    - router_ip: 10.99.102.3
-      name: RR3
-      ipv4_addresses:
-      - 192.25.76.2
-    - router_ip: 10.99.102.4
-      name: RR4
-      ipv4_addresses:
-      - 192.25.77.2
     ipsec_profile: CP-PROFILE
   - name: internet_path
     id: 1002
@@ -300,14 +278,6 @@ router_path_selection:
       name: RR2
       ipv4_addresses:
       - 192.16.72.2
-    - router_ip: 10.99.102.3
-      name: RR3
-      ipv4_addresses:
-      - 192.26.76.2
-    - router_ip: 10.99.102.4
-      name: RR4
-      ipv4_addresses:
-      - 192.26.77.2
     ipsec_profile: CP-PROFILE
   - name: LAN_HA
     id: 65535
@@ -413,22 +383,6 @@ metadata:
           id: 104
         - name: TRANSIT1
           id: 199
-    - name: REGION2
-      id: 2
-      zones:
-      - name: REGION2-ZONE
-        id: 1
-        sites:
-        - name: SITE21
-          id: 201
-        - name: SITE22
-          id: 202
-        - name: SITE23
-          id: 203
-        - name: SITE24
-          id: 204
-        - name: TRANSIT2
-          id: 299
     vrfs:
     - name: VRF_A
       vni: 101
