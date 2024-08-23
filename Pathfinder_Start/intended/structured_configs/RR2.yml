@@ -350,6 +350,7 @@ metadata:
     ssl_profile: STUN-DTLS
     vtep_ip: 10.99.102.2
     region: REGION1
+    site: SITE1_R1_PF
     interfaces:
     - name: Ethernet2
       carrier: mpls
@@ -383,6 +384,8 @@ metadata:
           id: 104
         - name: TRANSIT1
           id: 199
+        - name: SITE1_R1_PF
+          id: 198
     vrfs:
     - name: VRF_A
       vni: 101

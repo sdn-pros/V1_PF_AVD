@@ -26,6 +26,8 @@ cv_pathfinder_regions:
         id: 104
       - name: TRANSIT1
         id: 199
+      - name: SITE1_R1_PF
+        id: 198
 
 
 
