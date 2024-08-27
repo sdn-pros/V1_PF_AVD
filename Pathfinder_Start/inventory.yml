@@ -4,7 +4,7 @@ all:
     cvaas: 
       ansible_host: www.arista.io
       ansible_user: cvaas
-      ansible_password: "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJkaWQiOjcwODkzNDMxODEzNjM3MTM3NTksImRzbiI6InRuZy0wNiIsImRzdCI6ImFjY291bnQiLCJleHAiOjE4MTk5ODg4NzgsImlhdCI6MTcyNDQzMDQ4MCwib2dpIjo3MDg5MzQzMTgxMzYzNzAyMjQyLCJvZ24iOiJhcmlzdGEtdG5nLTA2Iiwic2lkIjoiNzFiMjg5MDZhNDJiMDU5ZmZiNTdlN2JmZThiMzdjNDIwZGFlM2Q4ZTA3Y2FlNjg0NTczNTYwYWJiYTRhNGM1Zi1SamdFa2l5ZExfRi1lMVRSTGgwbFhaSXpoWWczMl9JMTVlSVJHZkJHIn0.YVDdrIqcHDSPj2K2hDp0Ln_lLjLRpomfM5OJ-cURvVoHQvG0Y0Wzi0OQ3xR8oADYjnqETPALpsYCDkeWmeCpFA"
+      ansible_password: "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJkaWQiOjcwODkzNDMxODEzNjM3MTM3NTksImRzbiI6InRuZy0wNiIsImRzdCI6ImFjY291bnQiLCJleHAiOjE4MTkyOTkxMjAsImlhdCI6MTcyNDUxODMyMywib2dpIjo3MDg5MzQzMTgxMzYzNzAyMjQyLCJvZ24iOiJhcmlzdGEtdG5nLTA2Iiwic2lkIjoiMGY3NmI3NWNjYTUyMmZkZDcwMjk5ZWJjM2YzMzRjMWUwNDkzMTI4MGFkNmJmOWY3Y2VlYzhiMDdmODNmZDFkYi1HRmVyYUs5eTRrV1Z6SVlSbjlxcU1jVHpidVRnem5XUjloZ3EyYzlBIn0.mIrTrZ32RJp0wktw0IfC6GHdrq6KIBiE-GJ1bsHe6HoTXnuWIFTGM96D2dLlyxiQltydzdpTRuKY_T0JtzeRMQ"
       ansible_httpapi_use_ssl: True
       ansible_httpapi_validate_certs: False
       ansible_network_os: eos
@@ -43,7 +43,3 @@ all:
                     SITE14:
                       hosts:
                         Edge14:
-                REGION1-TRANSIT:
-                  hosts:
-                    P10:
-                    P11:

@@ -21,8 +21,6 @@
 | PF_NETWORK | wan_router | Edge12 | - | - | Provisioned | - |
 | PF_NETWORK | wan_router | Edge13 | - | - | Provisioned | - |
 | PF_NETWORK | wan_router | Edge14 | - | - | Provisioned | - |
-| PF_NETWORK | wan_router | P10 | - | - | Provisioned | - |
-| PF_NETWORK | wan_router | P11 | - | - | Provisioned | - |
 | PF_NETWORK | wan_rr | RR1 | - | - | Provisioned | - |
 | PF_NETWORK | wan_rr | RR2 | - | - | Provisioned | - |
 
@@ -54,7 +52,7 @@
 
 | Loopback Pool | Available Addresses | Assigned addresses | Assigned Address % |
 | ------------- | ------------------- | ------------------ | ------------------ |
-| 10.99.101.0/24 | 256 | 8 | 3.13 % |
+| 10.99.101.0/24 | 256 | 6 | 2.35 % |
 
 ### Loopback0 Interfaces Node Allocation
 
@@ -64,8 +62,6 @@
 | PF_NETWORK | Edge12 | 10.99.101.12/32 |
 | PF_NETWORK | Edge13 | 10.99.101.13/32 |
 | PF_NETWORK | Edge14 | 10.99.101.14/32 |
-| PF_NETWORK | P10 | 10.99.101.61/32 |
-| PF_NETWORK | P11 | 10.99.101.62/32 |
 | PF_NETWORK | RR1 | 10.99.101.1/32 |
 | PF_NETWORK | RR2 | 10.99.101.2/32 |
 

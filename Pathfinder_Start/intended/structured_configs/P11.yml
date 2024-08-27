@@ -318,7 +318,6 @@ router_path_selection:
   - name: LB-DEFAULT-AVT-POLICY-DEFAULT
     path_groups:
     - name: mpls_path
-    - name: internet_path
   - name: LB-DEFAULT-POLICY-CONTROL-PLANE
     path_groups:
     - name: internet_path

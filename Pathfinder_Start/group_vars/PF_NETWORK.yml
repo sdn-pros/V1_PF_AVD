@@ -18,17 +18,19 @@ cv_pathfinder_regions:
     sites:
       - name: SITE11
         id: 101
+        location: Perris, CA
       - name: SITE12
         id: 102
+        location: Lake Elsinore, CA
       - name: SITE13
         id: 103
+        location: Byron, CA
       - name: SITE14
         id: 104
-      - name: TRANSIT1
-        id: 199
+        location: San Jose, CA
       - name: SITE1_R1_PF
         id: 198
-
+        location: San Francisco, CA
 
 
 # You really want to use passwords here, as lots of critical info is reflected/served from these BGP servers
@@ -71,15 +73,76 @@ wan_carriers:
 
 wan_virtual_topologies:
   vrfs:
-    - name: VRF_A
+    - name: default
       policy: DEFAULT-AVT-POLICY
       wan_vni: 101
+    - name: VRF_A
+      policy: PROD-AVT-POLICY
+      wan_vni: 102
   policies:
     - name: DEFAULT-AVT-POLICY
       default_virtual_topology:
         path_groups:
-          - names: [mpls_path, internet_path]
+          - names: [internet_path, mpls_path]
             preference: preferred
+    - name: PROD-AVT-POLICY
+      application_virtual_topologies:
+        - application_profile: APP_1_PROFILE
+          id: 6
+          traffic_class: 3
+          dscp: 26
+          path_groups:
+            - names: [internet_path]
+              preference: alternate
+            - names: [mpls_path]
+              preference: preferred
+        - application_profile: APP_2_PROFILE
+          id: 5
+          traffic_class: 2
+          dscp: 18
+          path_groups:
+            - names: [internet_path]
+              preference: alternate
+            - names: [mpls_path]
+              preference: preferred
+      default_virtual_topology:
+        traffic_class: 0
+        dscp: 24
+        constraints:
+          latency: 15
+          jitter: 3000
+        path_groups:
+          - names: [internet_path, mpls_path]
+            preference: preferred
+application_classification:
+  field_sets:
+    l4_ports:
+      - name: APP_1_PORTS
+        port_values:
+          -  '80'
+          -  '443'
+      - name: APP_2_PORTS
+        port_values:
+          -  '5000'
+  applications:
+    ipv4_applications:
+      - name: APP_1
+        protocols:
+          - 'tcp'
+        tcp_dest_port_set_name: APP_1_PORTS
+      - name: APP_2
+        protocols:
+          - 'tcp'
+        tcp_dest_port_set_name: APP_2_PORTS
+  application_profiles:
+    - name: APP_1_PROFILE
+      applications:
+        - name: APP_1
+    - name: APP_2_PROFILE
+      applications:
+        - name: APP_2
+
+
 overlay_rt_type:
   admin_subfield: bgp_as
 tenants:
@@ -89,3 +152,6 @@ tenants:
         vrf_vni: 101
       - name: VRF_A
         vrf_vni: 102
+
+
+

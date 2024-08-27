@@ -112,12 +112,16 @@ ethernet_interfaces:
   shutdown: false
   type: routed
   description: mpls
+  flow_tracker:
+    hardware: FLOW-TRACKER
 - name: Ethernet3
   peer_type: l3_interface
   ip_address: 192.12.16.1/24
   shutdown: false
   type: routed
   description: internet
+  flow_tracker:
+    hardware: FLOW-TRACKER
 loopback_interfaces:
 - name: Loopback0
   description: Router_ID
@@ -213,7 +217,7 @@ management_security:
       - aristaDeviceCertProvisionerDefaultRootCA.crt
     tls_versions: '1.2'
 router_adaptive_virtual_topology:
-  topology_role: transit region
+  topology_role: edge
   region:
     name: REGION1
     id: 1
@@ -224,36 +228,54 @@ router_adaptive_virtual_topology:
     name: SITE12
     id: 102
   profiles:
+  - name: DEFAULT-AVT-POLICY-CONTROL-PLANE
+    load_balance_policy: LB-DEFAULT-AVT-POLICY-CONTROL-PLANE
   - name: DEFAULT-AVT-POLICY-DEFAULT
     load_balance_policy: LB-DEFAULT-AVT-POLICY-DEFAULT
-  - name: DEFAULT-POLICY-CONTROL-PLANE
-    load_balance_policy: LB-DEFAULT-POLICY-CONTROL-PLANE
-  - name: DEFAULT-POLICY-DEFAULT
-    load_balance_policy: LB-DEFAULT-POLICY-DEFAULT
+  - name: PROD-AVT-POLICY-APP_1_PROFILE
+    load_balance_policy: LB-PROD-AVT-POLICY-APP_1_PROFILE
+  - name: PROD-AVT-POLICY-APP_2_PROFILE
+    load_balance_policy: LB-PROD-AVT-POLICY-APP_2_PROFILE
+  - name: PROD-AVT-POLICY-DEFAULT
+    load_balance_policy: LB-PROD-AVT-POLICY-DEFAULT
   vrfs:
-  - name: VRF_A
-    policy: DEFAULT-AVT-POLICY
+  - name: default
+    policy: DEFAULT-AVT-POLICY-WITH-CP
     profiles:
+    - name: DEFAULT-AVT-POLICY-CONTROL-PLANE
+      id: 254
     - name: DEFAULT-AVT-POLICY-DEFAULT
       id: 1
-  - name: default
-    policy: DEFAULT-POLICY-WITH-CP
+  - name: VRF_A
+    policy: PROD-AVT-POLICY
     profiles:
-    - name: DEFAULT-POLICY-CONTROL-PLANE
-      id: 254
-    - name: DEFAULT-POLICY-DEFAULT
+    - name: PROD-AVT-POLICY-APP_1_PROFILE
+      id: 6
+    - name: PROD-AVT-POLICY-APP_2_PROFILE
+      id: 5
+    - name: PROD-AVT-POLICY-DEFAULT
       id: 1
   policies:
-  - name: DEFAULT-AVT-POLICY
-    matches:
-    - application_profile: default
-      avt_profile: DEFAULT-AVT-POLICY-DEFAULT
-  - name: DEFAULT-POLICY-WITH-CP
+  - name: DEFAULT-AVT-POLICY-WITH-CP
     matches:
     - application_profile: APP-PROFILE-CONTROL-PLANE
-      avt_profile: DEFAULT-POLICY-CONTROL-PLANE
+      avt_profile: DEFAULT-AVT-POLICY-CONTROL-PLANE
     - application_profile: default
-      avt_profile: DEFAULT-POLICY-DEFAULT
+      avt_profile: DEFAULT-AVT-POLICY-DEFAULT
+  - name: PROD-AVT-POLICY
+    matches:
+    - application_profile: APP_1_PROFILE
+      avt_profile: PROD-AVT-POLICY-APP_1_PROFILE
+      traffic_class: 3
+      dscp: 26
+    - application_profile: APP_2_PROFILE
+      avt_profile: PROD-AVT-POLICY-APP_2_PROFILE
+      traffic_class: 2
+      dscp: 18
+    - application_profile: default
+      avt_profile: PROD-AVT-POLICY-DEFAULT
+      traffic_class: 0
+      dscp: 24
 router_bfd:
   multihop:
     interval: 300
@@ -304,18 +326,30 @@ router_path_selection:
       - 192.16.72.2
     ipsec_profile: CP-PROFILE
   load_balance_policies:
+  - name: LB-DEFAULT-AVT-POLICY-CONTROL-PLANE
+    path_groups:
+    - name: internet_path
+    - name: mpls_path
   - name: LB-DEFAULT-AVT-POLICY-DEFAULT
     path_groups:
-    - name: mpls_path
     - name: internet_path
-  - name: LB-DEFAULT-POLICY-CONTROL-PLANE
+    - name: mpls_path
+  - name: LB-PROD-AVT-POLICY-APP_1_PROFILE
+    path_groups:
+    - name: internet_path
+      priority: 2
+    - name: mpls_path
+  - name: LB-PROD-AVT-POLICY-APP_2_PROFILE
+    path_groups:
+    - name: internet_path
+      priority: 2
+    - name: mpls_path
+  - name: LB-PROD-AVT-POLICY-DEFAULT
     path_groups:
     - name: internet_path
     - name: mpls_path
-  - name: LB-DEFAULT-POLICY-DEFAULT
-    path_groups:
-    - name: internet_path
-    - name: mpls_path
+    latency: 15
+    jitter: 3000
 router_traffic_engineering:
   enabled: true
 stun:
@@ -335,14 +369,36 @@ stun:
       ssl_profile: STUN-DTLS
 application_traffic_recognition:
   application_profiles:
+  - name: APP_1_PROFILE
+    applications:
+    - name: APP_1
+  - name: APP_2_PROFILE
+    applications:
+    - name: APP_2
   - name: APP-PROFILE-CONTROL-PLANE
     applications:
     - name: APP-CONTROL-PLANE
   applications:
     ipv4_applications:
+    - name: APP_1
+      protocols:
+      - tcp
+      tcp_dest_port_set_name: APP_1_PORTS
+    - name: APP_2
+      protocols:
+      - tcp
+      tcp_dest_port_set_name: APP_2_PORTS
     - name: APP-CONTROL-PLANE
       dest_prefix_set_name: PFX-PATHFINDERS
   field_sets:
+    l4_ports:
+    - name: APP_1_PORTS
+      port_values:
+      - '80'
+      - '443'
+    - name: APP_2_PORTS
+      port_values:
+      - '5000'
     ipv4_prefixes:
     - name: PFX-PATHFINDERS
       prefix_values:
@@ -363,9 +419,9 @@ vxlan_interface:
       source_interface: Dps1
       vrfs:
       - name: default
-        vni: 1
-      - name: VRF_A
         vni: 101
+      - name: VRF_A
+        vni: 102
 flow_tracking:
   hardware:
     trackers:
@@ -384,7 +440,7 @@ metadata:
   cv_tags:
     device_tags:
     - name: Role
-      value: transit region
+      value: edge
     - name: Region
       value: REGION1
     - name: Zone
@@ -405,7 +461,7 @@ metadata:
       - name: Carrier
         value: internet
   cv_pathfinder:
-    role: transit region
+    role: edge
     ssl_profile: STUN-DTLS
     vtep_ip: 10.99.102.12
     region: REGION1

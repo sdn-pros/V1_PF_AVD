@@ -312,8 +312,8 @@ interface Loopback0
 
 | VRF | VNI | Multicast Group |
 | ---- | --- | --------------- |
-| default | 1 | - |
-| VRF_A | 101 | - |
+| default | 101 | - |
+| VRF_A | 102 | - |
 
 #### VXLAN Interface Device Configuration
 
@@ -323,8 +323,8 @@ interface Vxlan1
    description RR2_VTEP
    vxlan source-interface Dps1
    vxlan udp-port 4789
-   vxlan vrf default vni 1
-   vxlan vrf VRF_A vni 101
+   vxlan vrf default vni 101
+   vxlan vrf VRF_A vni 102
 ```
 
 ## Routing
@@ -377,24 +377,28 @@ Topology role: pathfinder
 
 | Profile name | Load balance policy | Internet exit policy |
 | ------------ | ------------------- | -------------------- |
+| DEFAULT-AVT-POLICY-CONTROL-PLANE | LB-DEFAULT-AVT-POLICY-CONTROL-PLANE | - |
 | DEFAULT-AVT-POLICY-DEFAULT | LB-DEFAULT-AVT-POLICY-DEFAULT | - |
-| DEFAULT-POLICY-CONTROL-PLANE | LB-DEFAULT-POLICY-CONTROL-PLANE | - |
-| DEFAULT-POLICY-DEFAULT | LB-DEFAULT-POLICY-DEFAULT | - |
+| PROD-AVT-POLICY-APP_1_PROFILE | LB-PROD-AVT-POLICY-APP_1_PROFILE | - |
+| PROD-AVT-POLICY-APP_2_PROFILE | LB-PROD-AVT-POLICY-APP_2_PROFILE | - |
+| PROD-AVT-POLICY-DEFAULT | LB-PROD-AVT-POLICY-DEFAULT | - |
 
 #### AVT Policies
 
-##### AVT policy DEFAULT-AVT-POLICY
+##### AVT policy DEFAULT-AVT-POLICY-WITH-CP
 
 | Application profile | AVT Profile | Traffic Class | DSCP |
 | ------------------- | ----------- | ------------- | ---- |
+| APP-PROFILE-CONTROL-PLANE | DEFAULT-AVT-POLICY-CONTROL-PLANE | - | - |
 | default | DEFAULT-AVT-POLICY-DEFAULT | - | - |
 
-##### AVT policy DEFAULT-POLICY-WITH-CP
+##### AVT policy PROD-AVT-POLICY
 
 | Application profile | AVT Profile | Traffic Class | DSCP |
 | ------------------- | ----------- | ------------- | ---- |
-| APP-PROFILE-CONTROL-PLANE | DEFAULT-POLICY-CONTROL-PLANE | - | - |
-| default | DEFAULT-POLICY-DEFAULT | - | - |
+| APP_1_PROFILE | PROD-AVT-POLICY-APP_1_PROFILE | 3 | 26 |
+| APP_2_PROFILE | PROD-AVT-POLICY-APP_2_PROFILE | 2 | 18 |
+| default | PROD-AVT-POLICY-DEFAULT | 0 | 24 |
 
 #### VRFs configuration
 
@@ -402,22 +406,24 @@ Topology role: pathfinder
 
 | AVT policy |
 | ---------- |
-| DEFAULT-POLICY-WITH-CP |
+| DEFAULT-AVT-POLICY-WITH-CP |
 
 | AVT Profile | AVT ID |
 | ----------- | ------ |
-| DEFAULT-POLICY-DEFAULT | 1 |
-| DEFAULT-POLICY-CONTROL-PLANE | 254 |
+| DEFAULT-AVT-POLICY-DEFAULT | 1 |
+| DEFAULT-AVT-POLICY-CONTROL-PLANE | 254 |
 
 ##### VRF VRF_A
 
 | AVT policy |
 | ---------- |
-| DEFAULT-AVT-POLICY |
+| PROD-AVT-POLICY |
 
 | AVT Profile | AVT ID |
 | ----------- | ------ |
-| DEFAULT-AVT-POLICY-DEFAULT | 1 |
+| PROD-AVT-POLICY-DEFAULT | 1 |
+| PROD-AVT-POLICY-APP_2_PROFILE | 5 |
+| PROD-AVT-POLICY-APP_1_PROFILE | 6 |
 
 #### Router Adaptive Virtual Topology Configuration
 
@@ -426,36 +432,56 @@ Topology role: pathfinder
 router adaptive-virtual-topology
    topology role pathfinder
    !
-   policy DEFAULT-AVT-POLICY
+   policy DEFAULT-AVT-POLICY-WITH-CP
+      !
+      match application-profile APP-PROFILE-CONTROL-PLANE
+         avt profile DEFAULT-AVT-POLICY-CONTROL-PLANE
       !
       match application-profile default
          avt profile DEFAULT-AVT-POLICY-DEFAULT
    !
-   policy DEFAULT-POLICY-WITH-CP
+   policy PROD-AVT-POLICY
       !
-      match application-profile APP-PROFILE-CONTROL-PLANE
-         avt profile DEFAULT-POLICY-CONTROL-PLANE
+      match application-profile APP_1_PROFILE
+         avt profile PROD-AVT-POLICY-APP_1_PROFILE
+         traffic-class 3
+         dscp 26
+      !
+      match application-profile APP_2_PROFILE
+         avt profile PROD-AVT-POLICY-APP_2_PROFILE
+         traffic-class 2
+         dscp 18
       !
       match application-profile default
-         avt profile DEFAULT-POLICY-DEFAULT
+         avt profile PROD-AVT-POLICY-DEFAULT
+         traffic-class 0
+         dscp 24
+   !
+   profile DEFAULT-AVT-POLICY-CONTROL-PLANE
+      path-selection load-balance LB-DEFAULT-AVT-POLICY-CONTROL-PLANE
    !
    profile DEFAULT-AVT-POLICY-DEFAULT
       path-selection load-balance LB-DEFAULT-AVT-POLICY-DEFAULT
    !
-   profile DEFAULT-POLICY-CONTROL-PLANE
-      path-selection load-balance LB-DEFAULT-POLICY-CONTROL-PLANE
+   profile PROD-AVT-POLICY-APP_1_PROFILE
+      path-selection load-balance LB-PROD-AVT-POLICY-APP_1_PROFILE
    !
-   profile DEFAULT-POLICY-DEFAULT
-      path-selection load-balance LB-DEFAULT-POLICY-DEFAULT
+   profile PROD-AVT-POLICY-APP_2_PROFILE
+      path-selection load-balance LB-PROD-AVT-POLICY-APP_2_PROFILE
+   !
+   profile PROD-AVT-POLICY-DEFAULT
+      path-selection load-balance LB-PROD-AVT-POLICY-DEFAULT
    !
    vrf default
-      avt policy DEFAULT-POLICY-WITH-CP
-      avt profile DEFAULT-POLICY-DEFAULT id 1
-      avt profile DEFAULT-POLICY-CONTROL-PLANE id 254
+      avt policy DEFAULT-AVT-POLICY-WITH-CP
+      avt profile DEFAULT-AVT-POLICY-DEFAULT id 1
+      avt profile DEFAULT-AVT-POLICY-CONTROL-PLANE id 254
    !
    vrf VRF_A
-      avt policy DEFAULT-AVT-POLICY
-      avt profile DEFAULT-AVT-POLICY-DEFAULT id 1
+      avt policy PROD-AVT-POLICY
+      avt profile PROD-AVT-POLICY-DEFAULT id 1
+      avt profile PROD-AVT-POLICY-APP_2_PROFILE id 5
+      avt profile PROD-AVT-POLICY-APP_1_PROFILE id 6
 ```
 
 ### Router Traffic-Engineering
@@ -779,6 +805,8 @@ platform sfe data-plane cpu allocation maximum 1
 | Name | Source Prefix | Destination Prefix | Protocols | Protocol Ranges | TCP Source Port Set | TCP Destination Port Set | UDP Source Port Set | UDP Destination Port Set | DSCP |
 | ---- | ------------- | ------------------ | --------- | --------------- | ------------------- | ------------------------ | ------------------- | ------------------------ | ---- |
 | APP-CONTROL-PLANE | PFX-LOCAL-VTEP-IP | - | - | - | - | - | - | - | - |
+| APP_1 | - | - | tcp | - | - | APP_1_PORTS | - | - | - |
+| APP_2 | - | - | tcp | - | - | APP_2_PORTS | - | - | - |
 
 ### Application Profiles
 
@@ -788,7 +816,26 @@ platform sfe data-plane cpu allocation maximum 1
 | ---- | ---- | ------- |
 | application | APP-CONTROL-PLANE | - |
 
+#### Application Profile Name APP_1_PROFILE
+
+| Type | Name | Service |
+| ---- | ---- | ------- |
+| application | APP_1 | - |
+
+#### Application Profile Name APP_2_PROFILE
+
+| Type | Name | Service |
+| ---- | ---- | ------- |
+| application | APP_2 | - |
+
 ### Field Sets
+
+#### L4 Port Sets
+
+| Name | Ports |
+| ---- | ----- |
+| APP_1_PORTS | 80, 443 |
+| APP_2_PORTS | 5000 |
 
 #### IPv4 Prefix Sets
 
@@ -805,11 +852,29 @@ application traffic recognition
    application ipv4 APP-CONTROL-PLANE
       source prefix field-set PFX-LOCAL-VTEP-IP
    !
+   application ipv4 APP_1
+      protocol tcp destination port field-set APP_1_PORTS
+   !
+   application ipv4 APP_2
+      protocol tcp destination port field-set APP_2_PORTS
+   !
    application-profile APP-PROFILE-CONTROL-PLANE
       application APP-CONTROL-PLANE
    !
+   application-profile APP_1_PROFILE
+      application APP_1
+   !
+   application-profile APP_2_PROFILE
+      application APP_2
+   !
    field-set ipv4 prefix PFX-LOCAL-VTEP-IP
       10.99.102.2/32
+   !
+   field-set l4-port APP_1_PORTS
+      80, 443
+   !
+   field-set l4-port APP_2_PORTS
+      5000
 ```
 
 ### Router Path-selection
@@ -877,9 +942,11 @@ application traffic recognition
 
 | Policy Name | Jitter (ms) | Latency (ms) | Loss Rate (%) | Path Groups (priority) | Lowest Hop Count |
 | ----------- | ----------- | ------------ | ------------- | ---------------------- | ---------------- |
+| LB-DEFAULT-AVT-POLICY-CONTROL-PLANE | - | - | - | internet_path (1)<br>LAN_HA (1)<br>mpls_path (1) | False |
 | LB-DEFAULT-AVT-POLICY-DEFAULT | - | - | - | internet_path (1)<br>LAN_HA (1)<br>mpls_path (1) | False |
-| LB-DEFAULT-POLICY-CONTROL-PLANE | - | - | - | internet_path (1)<br>LAN_HA (1)<br>mpls_path (1) | False |
-| LB-DEFAULT-POLICY-DEFAULT | - | - | - | internet_path (1)<br>LAN_HA (1)<br>mpls_path (1) | False |
+| LB-PROD-AVT-POLICY-APP_1_PROFILE | - | - | - | LAN_HA (1)<br>mpls_path (1)<br>internet_path (2) | False |
+| LB-PROD-AVT-POLICY-APP_2_PROFILE | - | - | - | LAN_HA (1)<br>mpls_path (1)<br>internet_path (2) | False |
+| LB-PROD-AVT-POLICY-DEFAULT | 3000 | 15 | - | internet_path (1)<br>LAN_HA (1)<br>mpls_path (1) | False |
 
 #### Router Path-selection Device Configuration
 
@@ -910,17 +977,29 @@ router path-selection
          name RR1
          ipv4 address 192.15.71.2
    !
+   load-balance policy LB-DEFAULT-AVT-POLICY-CONTROL-PLANE
+      path-group internet_path
+      path-group LAN_HA
+      path-group mpls_path
+   !
    load-balance policy LB-DEFAULT-AVT-POLICY-DEFAULT
       path-group internet_path
       path-group LAN_HA
       path-group mpls_path
    !
-   load-balance policy LB-DEFAULT-POLICY-CONTROL-PLANE
-      path-group internet_path
+   load-balance policy LB-PROD-AVT-POLICY-APP_1_PROFILE
       path-group LAN_HA
       path-group mpls_path
+      path-group internet_path priority 2
    !
-   load-balance policy LB-DEFAULT-POLICY-DEFAULT
+   load-balance policy LB-PROD-AVT-POLICY-APP_2_PROFILE
+      path-group LAN_HA
+      path-group mpls_path
+      path-group internet_path priority 2
+   !
+   load-balance policy LB-PROD-AVT-POLICY-DEFAULT
+      jitter 3000
+      latency 15
       path-group internet_path
       path-group LAN_HA
       path-group mpls_path
