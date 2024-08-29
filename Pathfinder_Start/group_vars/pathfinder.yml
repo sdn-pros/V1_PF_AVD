@@ -2,7 +2,7 @@
 type: wan_rr
 
 wan_rr:
-  defaults:
+  defaults:git 
     cv_pathfinder_transit_mode: "region"
     data_plane_cpu_allocation_max: 1
     loopback_ipv4_pool: 10.99.101.0/24

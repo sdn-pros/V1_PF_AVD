@@ -87,62 +87,45 @@ wan_virtual_topologies:
             preference: preferred
     - name: PROD-AVT-POLICY
       application_virtual_topologies:
-        - application_profile: APP_1_PROFILE
-          id: 6
-          traffic_class: 3
-          dscp: 26
+        - application_profile: APP_TELNET_PROFILE
+          id: 2
           path_groups:
             - names: [internet_path]
-              preference: alternate
-            - names: [mpls_path]
               preference: preferred
-        - application_profile: APP_2_PROFILE
-          id: 5
-          traffic_class: 2
-          dscp: 18
+            - names: [mpls_path]
+              preference: alternate
+        - application_profile: APP_SSH_PROFILE
+          id: 3
           path_groups:
             - names: [internet_path]
               preference: alternate
             - names: [mpls_path]
               preference: preferred
       default_virtual_topology:
-        traffic_class: 0
-        dscp: 24
         constraints:
-          latency: 15
-          jitter: 3000
+          latency: 2
         path_groups:
           - names: [internet_path, mpls_path]
             preference: preferred
 application_classification:
   field_sets:
     l4_ports:
-      - name: APP_1_PORTS
+      - name: APP_1_SSH_PORTS
         port_values:
-          -  '80'
-          -  '443'
-      - name: APP_2_PORTS
-        port_values:
-          -  '5000'
+          -  '22'
   applications:
     ipv4_applications:
-      - name: APP_1
+      - name: APP_1_SSH
         protocols:
           - 'tcp'
-        tcp_dest_port_set_name: APP_1_PORTS
-      - name: APP_2
-        protocols:
-          - 'tcp'
-        tcp_dest_port_set_name: APP_2_PORTS
+        tcp_dest_port_set_name: APP_1_SSH_PORTS
   application_profiles:
-    - name: APP_1_PROFILE
+    - name: APP_SSH_PROFILE
       applications:
-        - name: APP_1
-    - name: APP_2_PROFILE
+        - name: APP_1_SSH
+    - name: APP_TELNET_PROFILE
       applications:
-        - name: APP_2
-
-
+        - name: telnet
 overlay_rt_type:
   admin_subfield: bgp_as
 tenants:

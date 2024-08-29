@@ -379,8 +379,8 @@ Topology role: pathfinder
 | ------------ | ------------------- | -------------------- |
 | DEFAULT-AVT-POLICY-CONTROL-PLANE | LB-DEFAULT-AVT-POLICY-CONTROL-PLANE | - |
 | DEFAULT-AVT-POLICY-DEFAULT | LB-DEFAULT-AVT-POLICY-DEFAULT | - |
-| PROD-AVT-POLICY-APP_1_PROFILE | LB-PROD-AVT-POLICY-APP_1_PROFILE | - |
-| PROD-AVT-POLICY-APP_2_PROFILE | LB-PROD-AVT-POLICY-APP_2_PROFILE | - |
+| PROD-AVT-POLICY-APP_SSH_PROFILE | LB-PROD-AVT-POLICY-APP_SSH_PROFILE | - |
+| PROD-AVT-POLICY-APP_TELNET_PROFILE | LB-PROD-AVT-POLICY-APP_TELNET_PROFILE | - |
 | PROD-AVT-POLICY-DEFAULT | LB-PROD-AVT-POLICY-DEFAULT | - |
 
 #### AVT Policies
@@ -396,9 +396,9 @@ Topology role: pathfinder
 
 | Application profile | AVT Profile | Traffic Class | DSCP |
 | ------------------- | ----------- | ------------- | ---- |
-| APP_1_PROFILE | PROD-AVT-POLICY-APP_1_PROFILE | 3 | 26 |
-| APP_2_PROFILE | PROD-AVT-POLICY-APP_2_PROFILE | 2 | 18 |
-| default | PROD-AVT-POLICY-DEFAULT | 0 | 24 |
+| APP_TELNET_PROFILE | PROD-AVT-POLICY-APP_TELNET_PROFILE | - | - |
+| APP_SSH_PROFILE | PROD-AVT-POLICY-APP_SSH_PROFILE | - | - |
+| default | PROD-AVT-POLICY-DEFAULT | - | - |
 
 #### VRFs configuration
 
@@ -422,8 +422,8 @@ Topology role: pathfinder
 | AVT Profile | AVT ID |
 | ----------- | ------ |
 | PROD-AVT-POLICY-DEFAULT | 1 |
-| PROD-AVT-POLICY-APP_2_PROFILE | 5 |
-| PROD-AVT-POLICY-APP_1_PROFILE | 6 |
+| PROD-AVT-POLICY-APP_TELNET_PROFILE | 2 |
+| PROD-AVT-POLICY-APP_SSH_PROFILE | 3 |
 
 #### Router Adaptive Virtual Topology Configuration
 
@@ -442,20 +442,14 @@ router adaptive-virtual-topology
    !
    policy PROD-AVT-POLICY
       !
-      match application-profile APP_1_PROFILE
-         avt profile PROD-AVT-POLICY-APP_1_PROFILE
-         traffic-class 3
-         dscp 26
+      match application-profile APP_TELNET_PROFILE
+         avt profile PROD-AVT-POLICY-APP_TELNET_PROFILE
       !
-      match application-profile APP_2_PROFILE
-         avt profile PROD-AVT-POLICY-APP_2_PROFILE
-         traffic-class 2
-         dscp 18
+      match application-profile APP_SSH_PROFILE
+         avt profile PROD-AVT-POLICY-APP_SSH_PROFILE
       !
       match application-profile default
          avt profile PROD-AVT-POLICY-DEFAULT
-         traffic-class 0
-         dscp 24
    !
    profile DEFAULT-AVT-POLICY-CONTROL-PLANE
       path-selection load-balance LB-DEFAULT-AVT-POLICY-CONTROL-PLANE
@@ -463,11 +457,11 @@ router adaptive-virtual-topology
    profile DEFAULT-AVT-POLICY-DEFAULT
       path-selection load-balance LB-DEFAULT-AVT-POLICY-DEFAULT
    !
-   profile PROD-AVT-POLICY-APP_1_PROFILE
-      path-selection load-balance LB-PROD-AVT-POLICY-APP_1_PROFILE
+   profile PROD-AVT-POLICY-APP_SSH_PROFILE
+      path-selection load-balance LB-PROD-AVT-POLICY-APP_SSH_PROFILE
    !
-   profile PROD-AVT-POLICY-APP_2_PROFILE
-      path-selection load-balance LB-PROD-AVT-POLICY-APP_2_PROFILE
+   profile PROD-AVT-POLICY-APP_TELNET_PROFILE
+      path-selection load-balance LB-PROD-AVT-POLICY-APP_TELNET_PROFILE
    !
    profile PROD-AVT-POLICY-DEFAULT
       path-selection load-balance LB-PROD-AVT-POLICY-DEFAULT
@@ -480,8 +474,8 @@ router adaptive-virtual-topology
    vrf VRF_A
       avt policy PROD-AVT-POLICY
       avt profile PROD-AVT-POLICY-DEFAULT id 1
-      avt profile PROD-AVT-POLICY-APP_2_PROFILE id 5
-      avt profile PROD-AVT-POLICY-APP_1_PROFILE id 6
+      avt profile PROD-AVT-POLICY-APP_TELNET_PROFILE id 2
+      avt profile PROD-AVT-POLICY-APP_SSH_PROFILE id 3
 ```
 
 ### Router Traffic-Engineering
@@ -805,8 +799,7 @@ platform sfe data-plane cpu allocation maximum 1
 | Name | Source Prefix | Destination Prefix | Protocols | Protocol Ranges | TCP Source Port Set | TCP Destination Port Set | UDP Source Port Set | UDP Destination Port Set | DSCP |
 | ---- | ------------- | ------------------ | --------- | --------------- | ------------------- | ------------------------ | ------------------- | ------------------------ | ---- |
 | APP-CONTROL-PLANE | PFX-LOCAL-VTEP-IP | - | - | - | - | - | - | - | - |
-| APP_1 | - | - | tcp | - | - | APP_1_PORTS | - | - | - |
-| APP_2 | - | - | tcp | - | - | APP_2_PORTS | - | - | - |
+| APP_1_SSH | - | - | tcp | - | - | APP_1_SSH_PORTS | - | - | - |
 
 ### Application Profiles
 
@@ -816,17 +809,17 @@ platform sfe data-plane cpu allocation maximum 1
 | ---- | ---- | ------- |
 | application | APP-CONTROL-PLANE | - |
 
-#### Application Profile Name APP_1_PROFILE
+#### Application Profile Name APP_SSH_PROFILE
 
 | Type | Name | Service |
 | ---- | ---- | ------- |
-| application | APP_1 | - |
+| application | APP_1_SSH | - |
 
-#### Application Profile Name APP_2_PROFILE
+#### Application Profile Name APP_TELNET_PROFILE
 
 | Type | Name | Service |
 | ---- | ---- | ------- |
-| application | APP_2 | - |
+| application | telnet | - |
 
 ### Field Sets
 
@@ -834,8 +827,7 @@ platform sfe data-plane cpu allocation maximum 1
 
 | Name | Ports |
 | ---- | ----- |
-| APP_1_PORTS | 80, 443 |
-| APP_2_PORTS | 5000 |
+| APP_1_SSH_PORTS | 22 |
 
 #### IPv4 Prefix Sets
 
@@ -852,29 +844,23 @@ application traffic recognition
    application ipv4 APP-CONTROL-PLANE
       source prefix field-set PFX-LOCAL-VTEP-IP
    !
-   application ipv4 APP_1
-      protocol tcp destination port field-set APP_1_PORTS
-   !
-   application ipv4 APP_2
-      protocol tcp destination port field-set APP_2_PORTS
+   application ipv4 APP_1_SSH
+      protocol tcp destination port field-set APP_1_SSH_PORTS
    !
    application-profile APP-PROFILE-CONTROL-PLANE
       application APP-CONTROL-PLANE
    !
-   application-profile APP_1_PROFILE
-      application APP_1
+   application-profile APP_SSH_PROFILE
+      application APP_1_SSH
    !
-   application-profile APP_2_PROFILE
-      application APP_2
+   application-profile APP_TELNET_PROFILE
+      application telnet
    !
    field-set ipv4 prefix PFX-LOCAL-VTEP-IP
       10.99.102.1/32
    !
-   field-set l4-port APP_1_PORTS
-      80, 443
-   !
-   field-set l4-port APP_2_PORTS
-      5000
+   field-set l4-port APP_1_SSH_PORTS
+      22
 ```
 
 ### Router Path-selection
@@ -944,9 +930,9 @@ application traffic recognition
 | ----------- | ----------- | ------------ | ------------- | ---------------------- | ---------------- |
 | LB-DEFAULT-AVT-POLICY-CONTROL-PLANE | - | - | - | internet_path (1)<br>LAN_HA (1)<br>mpls_path (1) | False |
 | LB-DEFAULT-AVT-POLICY-DEFAULT | - | - | - | internet_path (1)<br>LAN_HA (1)<br>mpls_path (1) | False |
-| LB-PROD-AVT-POLICY-APP_1_PROFILE | - | - | - | LAN_HA (1)<br>mpls_path (1)<br>internet_path (2) | False |
-| LB-PROD-AVT-POLICY-APP_2_PROFILE | - | - | - | LAN_HA (1)<br>mpls_path (1)<br>internet_path (2) | False |
-| LB-PROD-AVT-POLICY-DEFAULT | 3000 | 15 | - | internet_path (1)<br>LAN_HA (1)<br>mpls_path (1) | False |
+| LB-PROD-AVT-POLICY-APP_SSH_PROFILE | - | - | - | LAN_HA (1)<br>mpls_path (1)<br>internet_path (2) | False |
+| LB-PROD-AVT-POLICY-APP_TELNET_PROFILE | - | - | - | internet_path (1)<br>LAN_HA (1)<br>mpls_path (2) | False |
+| LB-PROD-AVT-POLICY-DEFAULT | - | 2 | - | internet_path (1)<br>LAN_HA (1)<br>mpls_path (1) | False |
 
 #### Router Path-selection Device Configuration
 
@@ -987,19 +973,18 @@ router path-selection
       path-group LAN_HA
       path-group mpls_path
    !
-   load-balance policy LB-PROD-AVT-POLICY-APP_1_PROFILE
+   load-balance policy LB-PROD-AVT-POLICY-APP_SSH_PROFILE
       path-group LAN_HA
       path-group mpls_path
       path-group internet_path priority 2
    !
-   load-balance policy LB-PROD-AVT-POLICY-APP_2_PROFILE
+   load-balance policy LB-PROD-AVT-POLICY-APP_TELNET_PROFILE
+      path-group internet_path
       path-group LAN_HA
-      path-group mpls_path
-      path-group internet_path priority 2
+      path-group mpls_path priority 2
    !
    load-balance policy LB-PROD-AVT-POLICY-DEFAULT
-      jitter 3000
-      latency 15
+      latency 2
       path-group internet_path
       path-group LAN_HA
       path-group mpls_path

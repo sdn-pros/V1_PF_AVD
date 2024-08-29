@@ -230,10 +230,10 @@ router_adaptive_virtual_topology:
     load_balance_policy: LB-DEFAULT-AVT-POLICY-CONTROL-PLANE
   - name: DEFAULT-AVT-POLICY-DEFAULT
     load_balance_policy: LB-DEFAULT-AVT-POLICY-DEFAULT
-  - name: PROD-AVT-POLICY-APP_1_PROFILE
-    load_balance_policy: LB-PROD-AVT-POLICY-APP_1_PROFILE
-  - name: PROD-AVT-POLICY-APP_2_PROFILE
-    load_balance_policy: LB-PROD-AVT-POLICY-APP_2_PROFILE
+  - name: PROD-AVT-POLICY-APP_TELNET_PROFILE
+    load_balance_policy: LB-PROD-AVT-POLICY-APP_TELNET_PROFILE
+  - name: PROD-AVT-POLICY-APP_SSH_PROFILE
+    load_balance_policy: LB-PROD-AVT-POLICY-APP_SSH_PROFILE
   - name: PROD-AVT-POLICY-DEFAULT
     load_balance_policy: LB-PROD-AVT-POLICY-DEFAULT
   vrfs:
@@ -247,10 +247,10 @@ router_adaptive_virtual_topology:
   - name: VRF_A
     policy: PROD-AVT-POLICY
     profiles:
-    - name: PROD-AVT-POLICY-APP_1_PROFILE
-      id: 6
-    - name: PROD-AVT-POLICY-APP_2_PROFILE
-      id: 5
+    - name: PROD-AVT-POLICY-APP_TELNET_PROFILE
+      id: 2
+    - name: PROD-AVT-POLICY-APP_SSH_PROFILE
+      id: 3
     - name: PROD-AVT-POLICY-DEFAULT
       id: 1
   policies:
@@ -262,18 +262,12 @@ router_adaptive_virtual_topology:
       avt_profile: DEFAULT-AVT-POLICY-DEFAULT
   - name: PROD-AVT-POLICY
     matches:
-    - application_profile: APP_1_PROFILE
-      avt_profile: PROD-AVT-POLICY-APP_1_PROFILE
-      traffic_class: 3
-      dscp: 26
-    - application_profile: APP_2_PROFILE
-      avt_profile: PROD-AVT-POLICY-APP_2_PROFILE
-      traffic_class: 2
-      dscp: 18
+    - application_profile: APP_TELNET_PROFILE
+      avt_profile: PROD-AVT-POLICY-APP_TELNET_PROFILE
+    - application_profile: APP_SSH_PROFILE
+      avt_profile: PROD-AVT-POLICY-APP_SSH_PROFILE
     - application_profile: default
       avt_profile: PROD-AVT-POLICY-DEFAULT
-      traffic_class: 0
-      dscp: 24
 router_bfd:
   multihop:
     interval: 300
@@ -332,12 +326,12 @@ router_path_selection:
     path_groups:
     - name: internet_path
     - name: mpls_path
-  - name: LB-PROD-AVT-POLICY-APP_1_PROFILE
+  - name: LB-PROD-AVT-POLICY-APP_TELNET_PROFILE
     path_groups:
     - name: internet_path
-      priority: 2
     - name: mpls_path
-  - name: LB-PROD-AVT-POLICY-APP_2_PROFILE
+      priority: 2
+  - name: LB-PROD-AVT-POLICY-APP_SSH_PROFILE
     path_groups:
     - name: internet_path
       priority: 2
@@ -346,8 +340,7 @@ router_path_selection:
     path_groups:
     - name: internet_path
     - name: mpls_path
-    latency: 15
-    jitter: 3000
+    latency: 2
 router_traffic_engineering:
   enabled: true
 stun:
@@ -367,36 +360,28 @@ stun:
       ssl_profile: STUN-DTLS
 application_traffic_recognition:
   application_profiles:
-  - name: APP_1_PROFILE
+  - name: APP_TELNET_PROFILE
     applications:
-    - name: APP_1
-  - name: APP_2_PROFILE
+    - name: telnet
+  - name: APP_SSH_PROFILE
     applications:
-    - name: APP_2
+    - name: APP_1_SSH
   - name: APP-PROFILE-CONTROL-PLANE
     applications:
     - name: APP-CONTROL-PLANE
   applications:
     ipv4_applications:
-    - name: APP_1
+    - name: APP_1_SSH
       protocols:
       - tcp
-      tcp_dest_port_set_name: APP_1_PORTS
-    - name: APP_2
-      protocols:
-      - tcp
-      tcp_dest_port_set_name: APP_2_PORTS
+      tcp_dest_port_set_name: APP_1_SSH_PORTS
     - name: APP-CONTROL-PLANE
       dest_prefix_set_name: PFX-PATHFINDERS
   field_sets:
     l4_ports:
-    - name: APP_1_PORTS
+    - name: APP_1_SSH_PORTS
       port_values:
-      - '80'
-      - '443'
-    - name: APP_2_PORTS
-      port_values:
-      - '5000'
+      - '22'
     ipv4_prefixes:
     - name: PFX-PATHFINDERS
       prefix_values:
