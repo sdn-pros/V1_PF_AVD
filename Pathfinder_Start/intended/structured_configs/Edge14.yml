@@ -122,6 +122,9 @@ ethernet_interfaces:
   description: internet
   flow_tracker:
     hardware: FLOW-TRACKER
+- name: Ethernet1
+  flow_tracker:
+    hardware: FLOW-TRACKER
 loopback_interfaces:
 - name: Loopback0
   description: Router_ID

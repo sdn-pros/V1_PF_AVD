@@ -5,6 +5,7 @@ fabric_name: PF_NETWORK
 
 # This is needed for virtual/containerized EOS
 bgp_update_wait_install: false
+custom_structured_configuration_prefix: "custom_"
 
 # Can also be just autovpn
 wan_mode: cv-pathfinder

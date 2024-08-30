@@ -137,7 +137,7 @@ management security
 
 | Tracker Name | Record Export On Inactive Timeout | Record Export On Interval | Number of Exporters | Applied On |
 | ------------ | --------------------------------- | ------------------------- | ------------------- | ---------- |
-| FLOW-TRACKER | 70000 | 300000 | 1 | Dps1<br>Ethernet2<br>Ethernet3 |
+| FLOW-TRACKER | 70000 | 300000 | 1 | Dps1<br>Ethernet2<br>Ethernet3<br>Ethernet1 |
 
 ##### Exporters Summary
 
@@ -266,6 +266,7 @@ interface Dps1
 
 | Interface | Description | Mode | VLANs | Native VLAN | Trunk Group | Channel-Group |
 | --------- | ----------- | ---- | ----- | ----------- | ----------- | ------------- |
+| Ethernet1 |  - | access | - | - | - | - |
 
 *Inherited from Port-Channel Interface
 
@@ -279,6 +280,10 @@ interface Dps1
 #### Ethernet Interfaces Device Configuration
 
 ```eos
+!
+interface Ethernet1
+   switchport
+   flow tracker hardware FLOW-TRACKER
 !
 interface Ethernet2
    description mpls

@@ -120,6 +120,11 @@ ethernet_interfaces:
   shutdown: false
   type: routed
   description: internet
+  flow_tracker:
+    hardware: FLOW-TRACKER
+- name: Ethernet3
+  flow_tracker:
+    hardware: FLOW-TRACKER
 loopback_interfaces:
 - name: Loopback0
   description: Router_ID
