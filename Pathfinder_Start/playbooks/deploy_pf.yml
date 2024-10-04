@@ -8,7 +8,7 @@
         name: arista.avd.cv_deploy
       vars:
         cv_server: www.arista.io
-        cv_token: "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJkaWQiOjcwODkzNDMxODEzNjM3MTM3NTksImRzbiI6InRuZy0wNiIsImRzdCI6ImFjY291bnQiLCJleHAiOjE4MjA1NzE2OTIsImlhdCI6MTcyNDkyNjg5NSwib2dpIjo3MDg5MzQzMTgxMzYzNzAyMjQyLCJvZ24iOiJhcmlzdGEtdG5nLTA2Iiwic2lkIjoiYzExMWU4ZjNjNWJjNTlkZTEwZmQzZjAyZDJhYjRjNjI2YTExN2VhOGI1MjY1ODFmMjMyM2JmZmVkOThjYjRiNy1GV3dRUDNmdjN4SWxMMlVHSElyVkk1SEw2U0NKWVZDeHBqVXJUeFNTIn0.GbWPduIhsJPhNDTuwDJkwYP7gxmVxJf45mizOo1aE2zg5omMYypUevKll0ra5PzU30RlBi4Z2VzGlFWYMtOMtg"
+        cv_token: "PLACE_TOKEN_HERE"
         cv_run_change_control: true
 # - name: Deploy config
 #   hosts: PF_NETWORK
